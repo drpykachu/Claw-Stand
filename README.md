@@ -20,14 +20,19 @@
 ### Equation Setup - going from a point in space ($X_p$, $Y_p$, $Z_p$) to the angles $(θ_a, θ_b, θ_c)$
 
 $\angle AB   =  \theta_a$
+
 $\angle BC   =  \theta_b$
+
 $\angle CT   =  \theta_c$
+
 $\theta_d   =  \theta_b -\theta_c$
 
 #### Deriving $Z_p$
 
 $Z_p = B sin\theta_a   +   C' sin\theta_a   +   T'  sin \theta_a   +   A$
+
 $\rightarrow   C'   =   C sin\theta_b$
+
 $\rightarrow   T'   =   T sin\theta_d$
 
 $Eq  (1):  Z_p = B sin\theta_a   +   C sin\theta_b sin\theta_a   +   T sin\theta_d  sin \theta_a  +   A$
@@ -35,7 +40,9 @@ $Eq  (1):  Z_p = B sin\theta_a   +   C sin\theta_b sin\theta_a   +   T sin\theta
 #### Deriving $Y_p$
 
 $Y_p = B cos\theta_a   +   C' cos\theta_a   +   T'  cos \theta_a$
+
 $\rightarrow   C'   =   C sin\theta_b$
+
 $\rightarrow   T'   =   T sin\theta_d$
 
 $Eq  (2):  Y_p = B cos\theta_a   +   C sin\theta_b cos\theta_a   +   T sin\theta_d  cos\theta_a$
