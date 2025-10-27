@@ -17,7 +17,7 @@
 </div>
 
 
-### Equation Setup - going from a point in space ($X_p$, $Y_p$, $Z_p$) to the angles$(θ_a, θ_b, θ_c)$
+### Equation Setup - going from a point in space ($X_p$, $Y_p$, $Z_p$) to the angles $(θ_a, θ_b, θ_c)$
 
 $\angle AB   =  \theta_a$
 $\angle BC   =  \theta_b$
