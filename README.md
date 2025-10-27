@@ -24,7 +24,7 @@ $\angle BC   =  \theta_b$
 $\angle CT   =  \theta_c$
 $\theta_d   =  \theta_b -\theta_c$
 
-#### Deriving$Z_p$
+#### Deriving $Z_p$
 
 $Z_p = B sin\theta_a   +   C' sin\theta_a   +   T'  sin \theta_a   +   A$
 $\rightarrow   C'   =   C sin\theta_b$
@@ -32,7 +32,7 @@ $\rightarrow   T'   =   T sin\theta_d$
 
 $Eq  (1):  Z_p = B sin\theta_a   +   C sin\theta_b sin\theta_a   +   T sin\theta_d  sin \theta_a  +   A$
 
-#### Deriving$Y_p$
+#### Deriving $Y_p$
 
 $Y_p = B cos\theta_a   +   C' cos\theta_a   +   T'  cos \theta_a$
 $\rightarrow   C'   =   C sin\theta_b$
@@ -40,7 +40,7 @@ $\rightarrow   T'   =   T sin\theta_d$
 
 $Eq  (2):  Y_p = B cos\theta_a   +   C sin\theta_b cos\theta_a   +   T sin\theta_d  cos\theta_a$
  
-#### Deriving$X_p$
+#### Deriving $X_p$
 
 $Eq  (3):   X_p =   C cos\theta_b   +   T  cos \theta_d$
 
@@ -53,4 +53,4 @@ $tan \theta_a   =   \frac{Z_p-A}{Y_p}$
 $\theta_a   =   atan2(\frac{Z_p-A}{Y_p})$
 
 
-$to be continued.....$
+to be continued...
