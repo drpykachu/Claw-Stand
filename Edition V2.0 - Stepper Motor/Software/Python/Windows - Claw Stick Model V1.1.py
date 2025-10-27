@@ -156,7 +156,7 @@ ax.set_zlim([-lims/10, lims])
 # ax.view_init(elev=90, azim=0) # X-Y plane initial view
 ax.view_init(elev=0, azim=0) # Y-Z plane initial view
 # ax.view_init(elev=0, azim=-90) # X-Z plane initial view
-# ax.view_init(elev=15, azim=-45) # Trimetric inital view
+ax.view_init(elev=15, azim=-45) # Trimetric inital view
 
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -218,7 +218,7 @@ def update(val):
         
 
         X_tar_text,Y_tar_text = rotate((0,0), ((R_tar+7.5)*np.cos(np.deg2rad(Offset_theta+val)), (R_tar+7.5)*np.sin(np.deg2rad(Offset_theta+val))),Offset_theta)
-        ax.text(X_tar_text, Y_tar_text, Ztar_new, str(k+1), color='r')
+#         ax.text(X_tar_text, Y_tar_text, Ztar_new, str(k+1), color='r')
 
         ax.plot([Xtar_new], [Ytar_new], [Ztar_new], '.b', markersize=8,zorder = 100)
     
