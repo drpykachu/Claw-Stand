@@ -9,7 +9,7 @@
 </div>
 
 
-### Each finger in the claw contains 3 motors - Motor A, Motor B, and Motor C. Each motor has an angle it can rotate  -$\theta_a$,$\theta_b$,$\theta_c$. We need to perform inverse kinematics to find the angles need to obtain the positioning of the finger to a point in 3d-space - ($X_p$,$Y_p$,$Z_p$).   
+### Each finger in the claw contains 3 motors - Motor A, Motor B, and Motor C. Each motor has an angle it can rotate - $\theta_a$, $\theta_b$, $\theta_c$. We need to perform inverse kinematics to find the angles need to obtain the positioning of the finger to a point in 3d-space - ($X_p$, $Y_p$, $Z_p$).   
 
 
 <div align="center">
@@ -17,7 +17,7 @@
 </div>
 
 
-### Equation Setup - going from a point in space ($X_p$,$Y_p$,$Z_p$) to the angles$(θ_a, θ_b, θ_c)$
+### Equation Setup - going from a point in space ($X_p$, $Y_p$, $Z_p$) to the angles$(θ_a, θ_b, θ_c)$
 
 $\angle AB   =  \theta_a$
 $\angle BC   =  \theta_b$
@@ -44,7 +44,7 @@ $Eq  (2):  Y_p = B cos\theta_a   +   C sin\theta_b cos\theta_a   +   T sin\theta
 
 $Eq  (3):   X_p =   C cos\theta_b   +   T  cos \theta_d$
 
-### Step 1 - Solving$\theta_a$
+### Step 1 - Solving $\theta_a$
 
 Visually, this is true, and is a combination of Eq (1) and Eq(2):  
 
