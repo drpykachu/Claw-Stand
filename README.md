@@ -1,4 +1,4 @@
-# 🦾 Claw Stand
+# 🦾 Claw Stand (Work in Progress)
 
 ### Hello all! 
 
