@@ -30,7 +30,7 @@ We need to perform **inverse kinematics** to find the angles needed to position 
 
 ---
 
-## 🧮 Equation Setup
+## Equation Setup
 
 We’re going from a target point in space \((X_p, Y_p, Z_p)\) to joint angles \((\theta_a, \theta_b, \theta_c)\).
 
@@ -112,12 +112,10 @@ So:
 
 We now solve for **θ_b** and **θ_d**, given:
 
-\[
-\begin{aligned}
+$$
 Y_p &= B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a,\\[4pt]
 X_p &= C\cos\theta_b + T\cos\theta_d.
-\end{aligned}
-\]
+$$
 
 All other variables (**Yₚ**, **Xₚ**, **B**, **C**, **T**, **θₐ**) are known.
 
@@ -207,13 +205,11 @@ If \(|K/R| > 1\), no real solution exists.
 
 For each valid θ<sub>b</sub>:
 
-\[
-\begin{aligned}
+$$
 \cos\theta_d &= \frac{X_p - C\cos\theta_b}{T},\\[4pt]
 \sin\theta_d &= \frac{S - C\sin\theta_b}{T},\\[4pt]
 \boxed{\theta_d = \operatorname{atan2}(\sin\theta_d, \cos\theta_d)}.
-\end{aligned}
-\]
+$$
 
 ---
 
