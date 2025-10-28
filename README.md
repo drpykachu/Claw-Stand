@@ -23,7 +23,7 @@ We need to perform **inverse kinematics** to find the angles needed to position 
 $$(X_p, Y_p, Z_p)$$
 
 <div align="center">
-  <img src="assets/Ball_and_Stick_Diagram.png" alt="Diagram" width="400"/>
+  <img src="assets/Ball_and_Stick_Diagram.png" alt="Diagram" width="750"/>
 </div>
 
 ---
