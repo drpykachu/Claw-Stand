@@ -66,10 +66,7 @@ $$
 Y_p = B\cos\theta_a + C'\cos\theta_a + T'\cos\theta_a
 $$
 
-Substitute:
-$$
-C' = C\sin\theta_b, \quad T' = T\sin\theta_d
-$$
+Substitute: $ C' = C\sin\theta_b, \quad T' = T\sin\theta_d $
 
 So:
 
@@ -98,25 +95,26 @@ $$
 So:
 
 $$
-\boxed{\theta_a = \operatorname{atan2}(Z_p - A, Y_p)}
+\theta_a = atan2(\frac{Z_p - A}{Y_p})
 $$
 
+Note - atan2 provides quadrant as atan loses information regarding negatives.
 ---
 
 ## Step 2 — Solving for $\theta_b$ and $\theta_d$
 
-We now solve for **$\theta_b$** and **$\theta_d$**, given:
+We now solve for $\theta_b$ and $\theta_d$, given:
 
 $$
-Y_p &= B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a.
-X_p &= C\cos\theta_b + T\cos\theta_d.
+Y_p = B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a.
+X_p = C\cos\theta_b + T\cos\theta_d.
 $$
 
 ---
 
 ### Step 1 — Simplify the equations
 
-Divide the first equation by \( \cos\theta_a \) (assuming \( \cos\theta_a \neq 0 \)) and define:
+Divide the first equation by $\cos\theta_a$ (assuming $\cos\theta_a \neq 0$) and define:
 
 $$
 S = \frac{Y_p}{\cos\theta_a} - B.
