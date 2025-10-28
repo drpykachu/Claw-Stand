@@ -14,15 +14,13 @@ This project is inspired by the **BattleBots claw stand robot**:
 
 Each finger in the claw contains **3 motors** — **Motor A**, **Motor B**, and **Motor C**.  
 Each motor rotates by an angle:  
-- Motor A → θₐ  
-- Motor B → θ_b  
-- Motor C → θ_c  
+- Motor A → $\theta_a$  
+- Motor B → $\theta_b$  
+- Motor C → $\theta_c$  
 
 We need to perform **inverse kinematics** to find the angles needed to position the finger tip at a given **3D coordinate**:
 
-$$
-(X_p, Y_p, Z_p)
-$$
+$$(X_p, Y_p, Z_p)$$
 
 <div align="center">
   <img src="assets/Ball_and_Stick_Diagram.png" alt="Diagram" width="400"/>
@@ -32,7 +30,7 @@ $$
 
 ## Equation Setup
 
-We’re going from a target point in space \((X_p, Y_p, Z_p)\) to joint angles \((\theta_a, \theta_b, \theta_c)\).
+We’re going from a target point in space $(X_p, Y_p, Z_p)$ to joint angles $(\theta_a, \theta_b, \theta_c)$.
 
 $$
 \angle AB = \theta_a \quad \angle BC = \theta_b \quad \angle CT = \theta_c
