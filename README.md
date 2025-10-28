@@ -106,7 +106,7 @@ Note - atan2 provides quadrant as atan loses information regarding negatives.
 We now solve for $\theta_b$ and $\theta_d$, given:
 
 $$
-Y_p = B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a,  
+Y_p = B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a,  \newline
 X_p = C\cos\theta_b + T\cos\theta_d.
 $$
 
@@ -123,7 +123,7 @@ $$
 Then the system becomes:
 
 $$
-C\sin\theta_b + T\sin\theta_d = S,  
+C\sin\theta_b + T\sin\theta_d = S,  \newline
 C\cos\theta_b + T\cos\theta_d = X_p.
 $$
 
