@@ -106,7 +106,10 @@ Note - atan2 provides quadrant as atan loses information regarding negatives.
 We now solve for $\theta_b$ and $\theta_d$, given:
 
 $$
-Y_p = B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a,  \\
+Y_p = B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a,
+$$
+
+$$
 X_p = C\cos\theta_b + T\cos\theta_d.
 $$
 
@@ -123,7 +126,10 @@ $$
 Then the system becomes:
 
 $$
-C\sin\theta_b + T\sin\theta_d = S,  \\
+C\sin\theta_b + T\sin\theta_d = S,  
+$$
+
+$$
 C\cos\theta_b + T\cos\theta_d = X_p.
 $$
 
@@ -140,12 +146,12 @@ $$
 where
 
 $$
-R = \sqrt{X_p^2 + S^2}, \quad \phi = \operatorname{atan2}(S, X_p).
+R = \sqrt{X_p^2 + S^2}, \quad \phi = atan2(\frac{S}{X_p}).
 $$
 
 ---
 
-### Step 3 — Eliminate θ<sub>d</sub>
+### Step 3 — Eliminate $\theta_d$
 
 Using the magnitude condition for the complex sum, we find:
 
@@ -159,7 +165,7 @@ $$
 K = \frac{R^2 + C^2 - T^2}{2C}.
 $$
 
-Let \( A = X_p \), \( B = S \), and \( R = \sqrt{A^2 + B^2} \).  
+Let $ A = X_p $, $ B = S $, and $ R = \sqrt{A^2 + B^2} $.  
 Then:
 
 $$
@@ -174,7 +180,7 @@ $$
 
 ---
 
-### Step 4 — Solve for θ<sub>b</sub>
+### Step 4 — Solve for $\theta_b$
 
 $$
 \boxed{\theta_b = \phi \pm \arccos\!\left(\frac{K}{R}\right)}
@@ -190,14 +196,14 @@ If \(|K/R| > 1\), no real solution exists.
 
 ---
 
-### Step 5 — Solve for θ<sub>d</sub>
+### Step 5 — Solve for $\theta_d$
 
-For each valid θ<sub>b</sub>:
+For each valid $\theta_b$:
 
 $$
 \cos\theta_d &= \frac{X_p - C\cos\theta_b}{T},\$$4pt]
 \sin\theta_d &= \frac{S - C\sin\theta_b}{T},\$$4pt]
-\boxed{\theta_d = \operatorname{atan2}(\sin\theta_d, \cos\theta_d)}.
+\boxed{\theta_d = atan2(\frac{\sin\theta_d}{ \cos\theta_d)}}.
 $$
 
 ---
