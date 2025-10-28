@@ -98,7 +98,7 @@ $$
 \theta_a = atan2(\frac{Z_p - A}{Y_p})
 $$
 
-Note - atan2 provides quadrant as atan loses information regarding negatives.
+#### *Note: atan2 provides the quadrant is used as atan loses information regarding negatives.
 ---
 
 ## Step 2 — Solving for $\theta_b$ and $\theta_d$
@@ -184,7 +184,7 @@ $$
 ### Step 4 — Solve for $\theta_b$
 
 $$
-\boxed{\theta_b = \phi \pm \arccos\!\left(\frac{K}{R}\right)}
+\boxed{\theta_b = \phi \pm \arccos\left(\frac{K}{R}\right)}
 $$
 
 Feasibility condition:
@@ -210,7 +210,7 @@ $$
 $$
 
 $$
-\boxed{\theta_d = atan2(\frac{\sin\theta_d}{ \cos\theta_d)}}.
+\boxed{\theta_d = atan2(\frac{\sin\theta_d}{ \cos\theta_d})}.
 $$
 
 ---
