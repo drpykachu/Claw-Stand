@@ -202,11 +202,13 @@ If \(|K/R| > 1\), no real solution exists.
 For each valid $\theta_b$:
 
 $$
-\cos\theta_d &= \frac{X_p - C\cos\theta_b}{T}
+\cos\theta_d = \frac{X_p - C\cos\theta_b}{T}
 $$
+
 $$
-\sin\theta_d &= \frac{S - C\sin\theta_b}{T}
+\sin\theta_d = \frac{S - C\sin\theta_b}{T}
 $$
+
 $$
 \boxed{\theta_d = atan2(\frac{\sin\theta_d}{ \cos\theta_d)}}.
 $$
