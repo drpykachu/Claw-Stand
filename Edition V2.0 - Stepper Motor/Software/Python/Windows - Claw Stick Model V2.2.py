@@ -50,8 +50,6 @@ def solve_thetas(Zp, Yp, Xp, A, B, C, T, Offset_R):
         sd = np.clip(sd, -1.0, 1.0)
         td = np.arctan2(sd, cd)
 
-#         print('ta: %.0f   tb: %.0f   td: %.0f     '% (np.rad2deg(theta_a), np.rad2deg(tb),np.rad2deg(td)))
-
         # ensures only one solution
         tc = td - tb
 

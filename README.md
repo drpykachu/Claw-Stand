@@ -213,38 +213,74 @@ $$
 \boxed{\theta_d = atan2(\frac{\sin\theta_d}{ \cos\theta_d})}.
 $$
 
+
 ---
 
-### Step 6 — Python Implementation
+### Step 6 — Boundary Condition
+
+The result of $\theta_d$ and $\theta_c$ can yield more than one solution. To guarantee that the joints bend outward:
+
+$$
+\theta_d > \theta_b
+$$
+
+Remembering that $\theta_d = \theta_b - \theta_c$ and substituting:
+
+$$
+\theta_c > 0
+$$
+
+guarantees a single solution.
+
+---
+
+### Step 7 — Python Implementation
 
 ```python
 import numpy as np
 
-def solve_thetas(Yp, Xp, B, C, T, theta_a):
+def solve_thetas(Zp, Yp, Xp, A, B, C, T, Offset_R):
+    """Returns the angles (in radians) of motors to obtain a point in space (Xp, Yp, Zp)"""
+    Xp = Xp - Offset_R
+    Yp = Yp
+
+    # Helps with breakdown of atan2 at infinity as Yp -> 0
+    if Yp < 0.0005 and Yp > 0:
+        Yp = 0.0005        
+    if Yp > -0.0005 and Yp <= 0:
+        Yp = -0.0005
+        
+
+    theta_a = np.atan2((Zp-A),Yp)
     ca = np.cos(theta_a)
-    if abs(ca) < 1e-12:
-        raise ValueError("cos(theta_a) ~ 0; handle that special case separately.")
-
-    S = Yp / ca - B
-    R = np.hypot(Xp, S)
+    
+    S = Yp/ca - B
+    R = np.hypot(Xp, S)           # sqrt(Xp^2 + S^2)
     phi = np.arctan2(S, Xp)
-    K = (R**2 + C**2 - T**2) / (2 * C)
+    K = (R*R + C*C - T*T) / (2.0*C)
 
-    if abs(K / R) > 1.0 + 1e-12:
-        return []  # No real solutions
+    if abs(K/R) > 1.0 + 1e-12:
+        return []  # no real solutions
 
-    val = np.clip(K / R, -1.0, 1.0)
+    # clamp for numeric stability
+    val = np.clip(K/R, -1.0, 1.0)
     acos_val = np.arccos(val)
 
     thetab_solutions = [phi + acos_val, phi - acos_val]
     solutions = []
-
     for tb in thetab_solutions:
-        cb, sb = np.cos(tb), np.sin(tb)
-        cd = (Xp - C * cb) / T
-        sd = (S - C * sb) / T
-        cd, sd = np.clip(cd, -1.0, 1.0), np.clip(sd, -1.0, 1.0)
+        cb = np.cos(tb); sb = np.sin(tb)
+        cd = (Xp - C*cb) / T
+        sd = (S  - C*sb) / T
+        # numeric clamp
+        cd = np.clip(cd, -1.0, 1.0)
+        sd = np.clip(sd, -1.0, 1.0)
         td = np.arctan2(sd, cd)
-        solutions.append((tb, td))
 
+        # ensures only one solution
+        tc = td - tb
+
+        if tc > 0:
+            solutions.append((theta_a, tb, td))
+            
     return solutions
