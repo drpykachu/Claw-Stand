@@ -165,7 +165,8 @@ $$
 K = \frac{R^2 + C^2 - T^2}{2C}.
 $$
 
-Let $ A = X_p $, $ B = S $, and $ R = \sqrt{A^2 + B^2} $.  
+Let $A = X_p$, $B = S$, and $R = \sqrt{A^2 + B^2}$.
+  
 Then:
 
 $$
@@ -201,8 +202,12 @@ If \(|K/R| > 1\), no real solution exists.
 For each valid $\theta_b$:
 
 $$
-\cos\theta_d &= \frac{X_p - C\cos\theta_b}{T},\$$4pt]
-\sin\theta_d &= \frac{S - C\sin\theta_b}{T},\$$4pt]
+\cos\theta_d &= \frac{X_p - C\cos\theta_b}{T}
+$$
+$$
+\sin\theta_d &= \frac{S - C\sin\theta_b}{T}
+$$
+$$
 \boxed{\theta_d = atan2(\frac{\sin\theta_d}{ \cos\theta_d)}}.
 $$
 
