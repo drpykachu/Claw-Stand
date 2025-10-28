@@ -284,3 +284,11 @@ def solve_thetas(Zp, Yp, Xp, A, B, C, T, Offset_R):
             solutions.append((theta_a, tb, td))
             
     return solutions
+
+```
+
+### Python Model Implementation
+
+<div align="center">
+  <img src="assets/Modeled Claw.gif" alt="Python Model" />
+</div>
