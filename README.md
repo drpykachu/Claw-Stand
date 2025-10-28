@@ -44,16 +44,13 @@ $$
 
 ---
 
-### Deriving \( Z_p \)
+### Deriving $Z_p$
 
 $$
 Z_p = B\sin\theta_a + C'\sin\theta_a + T'\sin\theta_a + A
 $$
 
-Substitute:
-$$
-C' = C\sin\theta_b, \quad T' = T\sin\theta_d
-$$
+Substitute: $C' = C\sin\theta_b, \quad T' = T\sin\theta_d $
 
 So:
 
@@ -63,7 +60,7 @@ $$
 
 ---
 
-### Deriving \( Y_p \)
+### Deriving $Y_p$
 
 $$
 Y_p = B\cos\theta_a + C'\cos\theta_a + T'\cos\theta_a
@@ -82,7 +79,7 @@ $$
 
 ---
 
-### Deriving \( X_p \)
+### Deriving $X_p$
 
 $$
 \boxed{X_p = C\cos\theta_b + T\cos\theta_d} \quad \text{(Eq. 3)}
@@ -90,7 +87,7 @@ $$
 
 ---
 
-## Step 1 — Solving for θₐ
+## Step 1 — Solving for $\theta_a$
 
 Visually, this is true from Eq. (1) and Eq. (2):
 
@@ -106,16 +103,14 @@ $$
 
 ---
 
-## Step 2 — Solving for θ_b and θ_d
+## Step 2 — Solving for $\theta_b$ and $\theta_d$
 
-We now solve for **θ_b** and **θ_d**, given:
+We now solve for **$\theta_b$** and **$\theta_d$**, given:
 
 $$
-Y_p &= B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a,\$$4pt]
+Y_p &= B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a.
 X_p &= C\cos\theta_b + T\cos\theta_d.
 $$
-
-All other variables (**Yₚ**, **Xₚ**, **B**, **C**, **T**, **θₐ**) are known.
 
 ---
 
