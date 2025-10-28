@@ -218,7 +218,7 @@ $$
 
 ### Step 6 — Boundary Condition
 
-The result of $\theta_d$ and $\theta_c$ can yield more than one solution. To guarantee that the joints bend outward:
+The result of $\theta_b$ and $\theta_d$ can yield more than one solution. To guarantee that the joints bend outward:
 
 $$
 \theta_d > \theta_b
@@ -287,7 +287,9 @@ def solve_thetas(Zp, Yp, Xp, A, B, C, T, Offset_R):
 
 ```
 
-### Python Model Implementation
+### Python Model Implementation 
+
+[Model Source Code](https://github.com/drpykachu/Claw-Stand/blob/main/Edition%20V2.0%20-%20Stepper%20Motor/Software/Python/Windows%20-%20Claw%20Stick%20Model%20V2.2.py)
 
 <div align="center">
   <img src="assets/Cropped Modeled Claw.gif" alt="Python Model" />

@@ -115,8 +115,8 @@ def pathing(points, delta_Z,num_fingers):
         """Checks if the amount of points is even."""
         pass
 
-    if points % 2 != 0:
-        raise PointCount("Number of points must be even.")
+    if points % num_fingers != 0:
+        raise PointCount(f"Number of points must be divisible by num_fingers ({num_fingers}).")
 
     # distributing points
     point_upper = int(points/num_fingers*(num_fingers-1))
@@ -227,8 +227,16 @@ canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 # ================= Slider Callback ===================
+min_delt_theta_a = 0.25
+min_delt_theta_b = 0.25
+min_delt_theta_c = 0.25
+
+theta_a_i = 100 
+theta_b_i = 100
+theta_c_i = 100
 
 def update(val):
+    global min_delt_theta_a, min_delt_theta_b, min_delt_theta_c, theta_a_i, theta_b_i, theta_c_i
     val = val - 1
     deg = np.deg2rad(val)
     ax.cla()
@@ -250,7 +258,7 @@ def update(val):
     ax.plot([0, 0], [-lims, lims], [0, 0], '--', c = 'k', lw = 2,alpha = 0.2)
     ax.plot([0, 0], [0, 0], [-lims/10, lims], '--', c = 'k', lw = 2,alpha = 0.2)
 
-    
+#     print()
     for k in range(num_fingers):
         Xtar, Ytar, Ztar  = circle_tar[0][int(val)], circle_tar[1][int(val)], circle_tar[2]
         Xtar, Ytar, Ztar = master_path[k, :, int(val)]
@@ -266,27 +274,52 @@ def update(val):
         Ytar_text = Ytar_new + tex_off * np.sin(np.deg2rad(Offset_theta))            
 
         # Solves for theta to reconstruct the model
-        try:
-            theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
-            coords_unr = plotter(theta_a,theta_b,theta_c,Offset_R)
+#         try:
+        theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0]
+        
+        theta_a_delt = abs(theta_a - theta_a_i)
+        theta_b_delt = abs(theta_b - theta_b_i)
+        theta_c_delt = abs(theta_c - theta_c_i)
+        theta_a_i = theta_a
+        theta_b_i = theta_b
+        theta_c_i = theta_c
+        
+        flag = 0
+        
+        if theta_a_delt < min_delt_theta_a and theta_a_delt > 10**-3:
+            min_delt_theta_a = theta_a_delt
+            flag = 1
+        if theta_b_delt < min_delt_theta_b and theta_b_delt > 10**-3:
+            min_delt_theta_b = theta_b_delt
+#             print(min_delt_theta_b)
+            flag = 1
+        if theta_c_delt < min_delt_theta_c and theta_c_delt > 10**-3:
+            min_delt_theta_c = theta_c_delt
+            flag = 1
+#         print(theta_b_delt)
+        if flag == 1:
+            print('%.5f %.5f %.5f' % (min_delt_theta_a, min_delt_theta_b, min_delt_theta_c))
+
+
+        coords_unr = plotter(theta_a,theta_b,theta_c,Offset_R)
+        
+        coords = 0*coords_unr
+
+        coords = rotate_vector(coords_unr, Offset_theta)
+
+        # Plots finger ball and stick model
+        ax.plot(coords[0], coords[1], coords[2], 'black', linewidth=2)
+        ax.plot([coords[0, 0]], [coords[1, 0]], [coords[2, 0]], 'o', c = 'tab:blue', markersize=8)
+        ax.plot([coords[0, 1]], [coords[1, 1]], [coords[2, 1]], 'o', c = joint_colors[1], markersize=8)
+        ax.plot([coords[0, 2]], [coords[1, 2]], [coords[2, 2]], 'o', c = joint_colors[2], markersize=8)
+        ax.plot([coords[0, 3]], [coords[1, 3]], [coords[2, 3]], 'o', c = joint_colors[3], markersize=8)
+        if np.round(coords[2, 4],2) != H_tar:                
+            ax.plot([coords[0, 4]], [coords[1, 4]], [coords[2, 4]], 'o', color = path_colors[k], markersize=8,zorder = 101)
+        else:
+            ax.plot([coords[0, 4]], [coords[1, 4]], [coords[2, 4]], 'o', color = path_colors[k], markersize=8,zorder = 99)
             
-            coords = 0*coords_unr
-
-            coords = rotate_vector(coords_unr, Offset_theta)
-
-            # Plots finger ball and stick model
-            ax.plot(coords[0], coords[1], coords[2], 'black', linewidth=2)
-            ax.plot([coords[0, 0]], [coords[1, 0]], [coords[2, 0]], 'o', c = 'tab:blue', markersize=8)
-            ax.plot([coords[0, 1]], [coords[1, 1]], [coords[2, 1]], 'o', c = joint_colors[1], markersize=8)
-            ax.plot([coords[0, 2]], [coords[1, 2]], [coords[2, 2]], 'o', c = joint_colors[2], markersize=8)
-            ax.plot([coords[0, 3]], [coords[1, 3]], [coords[2, 3]], 'o', c = joint_colors[3], markersize=8)
-            if np.round(coords[2, 4],2) != H_tar:                
-                ax.plot([coords[0, 4]], [coords[1, 4]], [coords[2, 4]], 'o', color = path_colors[k], markersize=8,zorder = 101)
-            else:
-                ax.plot([coords[0, 4]], [coords[1, 4]], [coords[2, 4]], 'o', color = path_colors[k], markersize=8,zorder = 99)
-                
-        except:
-            1
+#         except:
+#             1
 
 
         # plots fingertip path
