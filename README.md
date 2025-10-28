@@ -1,68 +1,116 @@
-# Claw Stand
+# 🦾 Claw Stand
 
 ### Hello all! 
 
-### This project is inspired by the battle bots claw stand robot:
+This project is inspired by the **BattleBots claw stand robot**:
 
 <div align="center">
   <img src="assets/BattleBots.gif" alt="BATTLEBOTS" />
 </div>
 
+---
 
-### Each finger in the claw contains 3 motors - Motor A, Motor B, and Motor C. Each motor has an angle it can rotate - $\theta_a$, $\theta_b$, $\theta_c$. We need to perform inverse kinematics to find the angles need to obtain the positioning of the finger to a point in 3d-space - ($X_p$, $Y_p$, $Z_p$).   
+### Overview
 
+Each finger in the claw contains **3 motors** — **Motor A**, **Motor B**, and **Motor C**.  
+Each motor rotates by an angle:  
+- Motor A → θₐ  
+- Motor B → θ_b  
+- Motor C → θ_c  
+
+We need to perform **inverse kinematics** to find the angles needed to position the finger tip at a given **3D coordinate**:
+
+\[
+(X_p, Y_p, Z_p)
+\]
 
 <div align="center">
   <img src="assets/Ball_and_Stick_Diagram.png" alt="Diagram" width="400"/>
 </div>
 
+---
 
-### Equation Setup - going from a point in space ($X_p$, $Y_p$, $Z_p$) to the angles $(θ_a, θ_b, θ_c)$
+## 🧮 Equation Setup
 
-$\angle AB   =  \theta_a$
+We’re going from a target point in space \((X_p, Y_p, Z_p)\) to joint angles \((\theta_a, \theta_b, \theta_c)\).
 
-$\angle BC   =  \theta_b$
+\[
+\angle AB = \theta_a \quad \angle BC = \theta_b \quad \angle CT = \theta_c
+\]
 
-$\angle CT   =  \theta_c$
+We also define:
 
-$\theta_d   =  \theta_b -\theta_c$
+\[
+\theta_d = \theta_b - \theta_c
+\]
 
-#### Deriving $Z_p$
+---
 
-$Z_p = B sin\theta_a   +   C' sin\theta_a   +   T'  sin \theta_a   +   A$
+### Deriving \( Z_p \)
 
-$\rightarrow   C'   =   C sin\theta_b$
+\[
+Z_p = B\sin\theta_a + C'\sin\theta_a + T'\sin\theta_a + A
+\]
 
-$\rightarrow   T'   =   T sin\theta_d$
+Substitute:
+\[
+C' = C\sin\theta_b, \quad T' = T\sin\theta_d
+\]
 
-$Eq  (1):  Z_p = B sin\theta_a   +   C sin\theta_b sin\theta_a   +   T sin\theta_d  sin \theta_a  +   A$
+So:
 
-#### Deriving $Y_p$
+\[
+\boxed{Z_p = B\sin\theta_a + C\sin\theta_b\sin\theta_a + T\sin\theta_d\sin\theta_a + A} \quad \text{(Eq. 1)}
+\]
 
-$Y_p = B cos\theta_a   +   C' cos\theta_a   +   T'  cos \theta_a$
+---
 
-$\rightarrow   C'   =   C sin\theta_b$
+### Deriving \( Y_p \)
 
-$\rightarrow   T'   =   T sin\theta_d$
+\[
+Y_p = B\cos\theta_a + C'\cos\theta_a + T'\cos\theta_a
+\]
 
-$Eq  (2):  Y_p = B cos\theta_a   +   C sin\theta_b cos\theta_a   +   T sin\theta_d  cos\theta_a$
- 
-#### Deriving $X_p$
+Substitute:
+\[
+C' = C\sin\theta_b, \quad T' = T\sin\theta_d
+\]
 
-$Eq  (3):   X_p =   C cos\theta_b   +   T  cos \theta_d$
+So:
 
-### Step 1 - Solving $\theta_a$
+\[
+\boxed{Y_p = B\cos\theta_a + C\sin\theta_b\cos\theta_a + T\sin\theta_d\cos\theta_a} \quad \text{(Eq. 2)}
+\]
 
-Visually, this is true, and is a combination of Eq (1) and Eq(2):  
+---
 
-$tan \theta_a   =   \frac{Z_p-A}{Y_p}$
+### Deriving \( X_p \)
 
-$\theta_a   =   atan2(\frac{Z_p-A}{Y_p})$
+\[
+\boxed{X_p = C\cos\theta_b + T\cos\theta_d} \quad \text{(Eq. 3)}
+\]
 
+---
 
-## Step 2 - Solving for θ<sub>b</sub> and θ<sub>d</sub>
+## Step 1 — Solving for θₐ
 
-We want to solve for the unknown angles **θ<sub>b</sub>** and **θ<sub>d</sub>** given:
+Visually, this is true from Eq. (1) and Eq. (2):
+
+\[
+\tan\theta_a = \frac{Z_p - A}{Y_p}
+\]
+
+So:
+
+\[
+\boxed{\theta_a = \operatorname{atan2}(Z_p - A, Y_p)}
+\]
+
+---
+
+## Step 2 — Solving for θ_b and θ_d
+
+We now solve for **θ_b** and **θ_d**, given:
 
 \[
 \begin{aligned}
@@ -142,10 +190,10 @@ R\cos(\theta_b - \phi) = K.
 ### Step 4 — Solve for θ<sub>b</sub>
 
 \[
-\theta_b = \phi \pm \arccos\!\left(\frac{K}{R}\right),
+\boxed{\theta_b = \phi \pm \arccos\!\left(\frac{K}{R}\right)}
 \]
 
-with the feasibility condition:
+Feasibility condition:
 
 \[
 \left|\frac{K}{R}\right| \le 1.
@@ -163,7 +211,7 @@ For each valid θ<sub>b</sub>:
 \begin{aligned}
 \cos\theta_d &= \frac{X_p - C\cos\theta_b}{T},\\[4pt]
 \sin\theta_d &= \frac{S - C\sin\theta_b}{T},\\[4pt]
-\theta_d &= \operatorname{atan2}(\sin\theta_d, \cos\theta_d).
+\boxed{\theta_d = \operatorname{atan2}(\sin\theta_d, \cos\theta_d)}.
 \end{aligned}
 \]
 
