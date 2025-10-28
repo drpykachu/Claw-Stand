@@ -181,9 +181,8 @@ T = 20  # length of final digit T
 
 
 num_fingers = 5   # Number of fingers  
-Offset_R    = 10  # Extension from origin
+Offset_R    = 20  # Extension from origin
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers]
-print(Offset_theta_master)
 
 R_tar = 35
 H_tar = 45
@@ -224,7 +223,7 @@ ax.set_zlim([-lims/10, lims])
 ax.view_init(elev=90, azim=0) # X-Y plane initial view
 # ax.view_init(elev=0, azim=0) # Y-Z plane initial view
 # ax.view_init(elev=0, azim=-90) # X-Z plane initial view
-# ax.view_init(elev=15, azim=-45) # Trimetric inital view
+ax.view_init(elev=15, azim=-45) # Trimetric inital view
 
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -242,7 +241,7 @@ def update(val):
     ax.set_zlabel("Z")
     
     # Plots red circular trajectory
-    ax.plot(circle_tar[0], circle_tar[1], circle_tar[2], 'r--', linewidth=1.5, label="Target Path")    
+    ax.plot(circle_tar[0], circle_tar[1], circle_tar[2], 'k--', linewidth=1.5, label="Target Path")    
 
     # Plots blue base circle
     base_circle = circle(Offset_R, 0, np.linspace(0,360,101))
@@ -294,12 +293,12 @@ def update(val):
 
         # plots fingertip path
         master_path_plot = rotate_vector(master_path[k], Offset_theta)
-        ax.plot(master_path_plot[0], master_path_plot[1], master_path_plot[2], path_colors[k], markersize=8,zorder = 50)
+        ax.plot(master_path_plot[0], master_path_plot[1], master_path_plot[2],ls = '--', c = path_colors[k], markersize=8,zorder = 50)
 
         # plots fingertip location - and shows if contact or not
         ax.plot(Xtar_new, Ytar_new, Ztar_new, '.k', markersize=8,zorder = 100) 
               
-        txt = ax.text(Xtar_text, Ytar_text, Ztar_new, str(k+1),color=path_colors[k], fontsize=12)
+        txt = ax.text(Xtar_text, Ytar_text, Ztar_new, str(k+1),color=path_colors[k], fontsize=12,zorder = 101)
 
         # Add a black outline
         txt.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
@@ -307,9 +306,24 @@ def update(val):
     canvas.draw_idle()
     
 # ================= Slider Widget ===================
-slider = tk.Scale(root, from_= 1, to=points, orient="horizontal", length=400,
-                  label="Degree", command=lambda v: update(float(v)))
+slider = tk.Scale(root, from_= 0, to=points, orient="horizontal", length=400,
+                  label="Point", command=lambda v: update(float(v)))
 slider.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
 
 update(0)
+
+# ================= Slider Widget - Animation ===================
+speed = 20  # milliseconds per update
+
+def animate():
+    val = slider.get() + 1
+    if val >= points:
+        val = 0
+    slider.set(val)
+    # Schedule next update
+    root.after(speed, animate)
+
+# Start animation
+animate()
+
 root.mainloop()
