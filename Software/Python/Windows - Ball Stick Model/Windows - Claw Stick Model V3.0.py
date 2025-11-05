@@ -338,6 +338,6 @@ def animate():
     root.after(speed, animate)
 
 # Start animation
-# animate()
+animate()
 
 root.mainloop()
