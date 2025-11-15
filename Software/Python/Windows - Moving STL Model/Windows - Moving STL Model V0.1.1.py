@@ -108,7 +108,8 @@ for p in range(num_fingers):
         else:
             points_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(points_poly_dict[f'F{p}J{j}'], color=path_colors[p], point_size=PS, render_points_as_spheres=True)
             
-# Lines - Fingers and Paths
+# Lines - Fingers and Paths lines_poly_dict[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
+            
 lines_poly_dict = {}
 lines_actor_dict = {}
 for p in range(num_fingers):
@@ -328,3 +329,4 @@ timer.start(100) # set speed in ms
 # === Show window ===
 main_window.show()
 sys.exit(app.exec_())
+                                    
