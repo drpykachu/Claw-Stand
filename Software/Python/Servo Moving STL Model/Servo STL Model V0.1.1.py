@@ -22,11 +22,16 @@ T = 75.66 # top digit height
 
 num_fingers = 5
 Offset_R    = 74.05  # From origin (0,0,0)
-R_tar       = 120  # Radius of target circle path 
+# Offset_R    = 85   # From origin (0,0,0) # needs to be this
+
+R_tar       = 135  # Radius of target circle path 
 H_tar       = 220  # Height of target circle path
 
 delta_Z     = 20   # Dropping from path for reset 
-points      = 100 # Number of points for path 
+points      = 100  # Number of points for path
+
+minstep     = 0.293    # stepper motor step angle
+speed       = 20   # Animation speed
 
 
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -64,11 +69,6 @@ main_window.setCentralWidget(plotter)
 # plotter.view_zx()  
 # plotter.view_yx()
 # plotter.view_yz()  
-camera_distance(plotter, distance = 1000)
-
-
-
-
 
 # === Stagnant Plots ===
 
@@ -127,7 +127,7 @@ opacity_stl = 1
 opacity_color = "lightgray"
 
 # Motor A
-stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks V0.1\Sub Assemblies\Motor A + bearing + base.STL"
+stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor A + bearing + base.STL"
 p = 'ALL'
 mesh = trimesh.load_mesh(stl_path_A)
 pointers, faces = mesh.vertices, mesh.faces
@@ -138,7 +138,7 @@ translate_object(motor_poly_dict[f'F{p}M{0}'], (-118.5,101,0))        # Centers 
 rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
 
 # Motor B
-stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks V0.1\Sub Assemblies\Motor B + bearing.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor B + bearing.STL"
 for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_B)
     pointers, faces = mesh.vertices, mesh.faces
@@ -151,7 +151,7 @@ for p in range(num_fingers):
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor C
-stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks V0.1\Sub Assemblies\Motor C + bearing.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor C + bearing.STL"
 for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_C)
     pointers, faces = mesh.vertices, mesh.faces
@@ -164,7 +164,7 @@ for p in range(num_fingers):
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor T
-stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks V0.1\Sub Assemblies\Motor T.STL"
+stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor T.STL"
 for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_T)
     pointers, faces = mesh.vertices, mesh.faces
@@ -186,7 +186,6 @@ primerC = np.zeros((num_fingers))
 primerT = np.zeros((num_fingers))
 
 val = 0
-tester = 0
 
 vector_x = (1,0,0)
 vector_y = (0,1,0)
@@ -199,23 +198,101 @@ point3 = (0, 0, A+B+C) # where the C joint is
 dtx = np.zeros((num_fingers))
 dtz = np.zeros((num_fingers))
 
+minmax_a = np.zeros(points)
+minmax_b = np.zeros(points)
+minmax_c = np.zeros(points)
+
+
+# Initial check - finds max angle and steps
+
+for i in range(points):
+    Xtar, Ytar, Ztar = master_path[0, :, int(i)]
+    try:
+        theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
+        minmax_a[i] = theta_a
+        minmax_b[i] = theta_b
+        minmax_c[i] = theta_c
+    except:
+        print('WARNING - not all points in path have a solution.')
+
+
+print()
+print()
+
+print('MIN')
+print('A: %.4f' % (np.min(minmax_a*180/3.14)))
+print('B: %.4f' % (np.min(minmax_b*180/3.14)))
+print('C: %.4f' % (np.min(minmax_c*180/3.14)))
+
+print('MAX')
+print('A: %.4f' % (np.max(minmax_a*180/3.14)))
+print('B: %.4f' % (np.max(minmax_b*180/3.14)))
+print('C: %.4f' % (np.max(minmax_c*180/3.14)))
+
+print('MAX - MIN')
+print('A: %.4f' % (np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14)))
+print('B: %.4f' % (np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14)))
+print('C: %.4f' % (np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14)))
+
+print('Number Steps')
+print('A: %.1f' % ((np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14))/minstep))
+print('B: %.1f' % ((np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14))/minstep))
+print('C: %.1f' % ((np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14))/minstep))
+
+theta_reals = np.ones(3)*361.0 # random seed greater than any angle
+theta_a = 361.0
+theta_b = 361.0
+theta_c = 361.0
+
+camera_distance(plotter, distance = 1000)
+step_counter = np.zeros(3)*0
+
 def animate():
-    global val
+    global val, theta_a, theta_b, theta_c ,step_counter
 
     if val == points:
         val = 0
+#         print(step_counter)
+
         
     for k in range(num_fingers):
         try:
             ### Finding angles and rebuilding fingers
-            Xtar, Ytar, Ztar = master_path[k, :, int(val)]
+            Xtar, Ytar, Ztar = master_path[k, :, int(val)] 
             Offset_theta = Offset_theta_master[k]
             Xtar_new, Ytar_new = rotate_point((0,0), (Xtar, Ytar),Offset_theta)
             Ztar_new = Ztar
-            Xtar_text = Xtar_new + tex_off * np.cos(np.deg2rad(Offset_theta))
-            Ytar_text = Ytar_new + tex_off * np.sin(np.deg2rad(Offset_theta))            
+            
+            theta_reals = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
+            
+            # checks for a change in angle based on the stepper motor step. makes it go from indefinite to a real world
+            if theta_a == 361.0:
+                    theta_a = theta_reals[0]
+                    theta_b = theta_reals[1]
+                    theta_c = theta_reals[2]
+            
+            err = theta_reals[0] - theta_a
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_a += step_change
+                step_counter[0] += step_change
 
-            theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
+            err = theta_reals[1] - theta_b
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_b += step_change
+                step_counter[1] += step_change
+
+            err = theta_reals[2] - theta_c
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_c += step_change
+                step_counter[2] += step_change
+
+
 
             coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, B, C, T)
             coords = rotate_vector(coords_unr, Offset_theta)
@@ -324,9 +401,9 @@ def animate():
 
 timer = QTimer()
 timer.timeout.connect(animate)
-timer.start(100) # set speed in ms
+timer.start(speed) # set speed in ms
 
 # === Show window ===
 main_window.show()
 sys.exit(app.exec_())
-                                    
+                                           
