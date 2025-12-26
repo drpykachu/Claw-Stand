@@ -15,7 +15,7 @@ MINMAX_B = [8.3722,53.9247]
 MINMAX_C = [102.9919,115.7924]
 MINMAXES = [MINMAX_C,MINMAX_B,MINMAX_A]
 
-titles = ['Motor C', 'Motor B', 'Motor A']
+titles = ['i.) Top Motor (C)', 'ii.) Middle Motor (B)', 'iii.) Bottom Motor (A)']
 
 # individual sections
 A = A/1000 # m, bottom digit + motor A height
@@ -33,22 +33,10 @@ Holder_Motor_C_Weight = 15 / 1000 + buffer/1000  #kg
 Holder_Motor_T_Weight = 8  / 1000 + buffer/1000  #kg
 
 # weights to move
-W_plate =  1  /  2.20462 # kg, only 4 fingers will hold at a time
+W_plate_lb =  2 #lb, only 4 fingers will hold at a time
+W_plate =  W_plate_lb  /  2.20462 # kg, only 4 fingers will hold at a time
 W_plate = W_plate/4 # kg, only 4 fingers will hold at a time
 
-Holder_Motor_C_Weight2Move = [0, 0, Holder_Motor_T_Weight+W_plate]
-Holder_Motor_B_Weight2Move = [0, Holder_Motor_C_Weight + weight_motor + weight_bearing, Holder_Motor_T_Weight+W_plate]
-Holder_Motor_A_Weight2Move = [Holder_Motor_B_Weight + weight_motor + weight_bearing, Holder_Motor_C_Weight + weight_motor + weight_bearing, Holder_Motor_T_Weight+W_plate]
-
-# Lengths to move
-Holder_Motor_C_Length2Move = [0,0,T]
-Holder_Motor_B_Length2Move = [0,B,T]
-Holder_Motor_A_Length2Move = [C,B,T]
-
-lengths = np.array([Holder_Motor_C_Length2Move,Holder_Motor_B_Length2Move,Holder_Motor_A_Length2Move])
-weights = np.array([Holder_Motor_C_Weight2Move,Holder_Motor_B_Weight2Move,Holder_Motor_A_Weight2Move])
-moments = lengths*weights
-moments = sum(moments.transpose()) # combines to find a single moment, order of C, B, A
 
 # Overall
 # The torque (stalled) is 2.3kg.cm@6V
@@ -74,13 +62,36 @@ fig.canvas.manager.window.move(150,0)
 x = np.linspace(0,180,361)
 
 for i in range(0,len(axs.reshape(-1))):
+
     K = K_array[i]
-    Mom = moments[i]
     weight_torque_array = []
     spring_torque_array = []
     motor_torque_array = []    
-    for k in range(0,len(x)):    
+    for k in range(0,len(x)):
         theta = x[k]
+        if theta <  MINMAXES[i][0] or theta > MINMAXES[i][1]:
+            Holder_Motor_C_Weight2Move = [0, 0, Holder_Motor_T_Weight]
+            Holder_Motor_B_Weight2Move = [0, Holder_Motor_C_Weight + weight_motor + weight_bearing, Holder_Motor_T_Weight]
+            Holder_Motor_A_Weight2Move = [Holder_Motor_B_Weight + weight_motor + weight_bearing, Holder_Motor_C_Weight + weight_motor + weight_bearing, Holder_Motor_T_Weight]
+        else:
+            Holder_Motor_C_Weight2Move = [0, 0, Holder_Motor_T_Weight+W_plate]
+            Holder_Motor_B_Weight2Move = [0, Holder_Motor_C_Weight + weight_motor + weight_bearing, Holder_Motor_T_Weight+W_plate]
+            Holder_Motor_A_Weight2Move = [Holder_Motor_B_Weight + weight_motor + weight_bearing, Holder_Motor_C_Weight + weight_motor + weight_bearing, Holder_Motor_T_Weight+W_plate]
+
+        # Lengths to move
+        Holder_Motor_C_Length2Move = [0,0,T]
+        Holder_Motor_B_Length2Move = [0,B,T]
+        Holder_Motor_A_Length2Move = [C,B,T]
+
+        lengths = np.array([Holder_Motor_C_Length2Move,Holder_Motor_B_Length2Move,Holder_Motor_A_Length2Move])
+        weights = np.array([Holder_Motor_C_Weight2Move,Holder_Motor_B_Weight2Move,Holder_Motor_A_Weight2Move])
+        moments = lengths*weights
+        moments = sum(moments.transpose()) # combines to find a single moment, order of C, B, A
+        Mom = moments[i]
+        
+        
+        
+        
         weight_torque = Mom*G*np.cos(np.deg2rad(theta)) # (m)*(m/s^2)*kg = m*N
         spring_torque = K*theta
         weight_torque_array.append(weight_torque)
@@ -93,8 +104,8 @@ for i in range(0,len(axs.reshape(-1))):
     
     axs[i].plot(x,motor_torque_array,label = 'Motor', c = 'k')
     axs[i].plot(x,-motor_torque_array, c = 'k')
-    axs[i].plot(x,weight_torque_array,label = 'Weight',c='b',alpha = 0.3,linestyle='--')
-    axs[i].plot(x,spring_torque_array,label = 'Spring',c='r',alpha = 0.3,linestyle='--')
+    axs[i].plot(x,weight_torque_array,label = 'Weight',c='b',alpha = 0.3,linestyle='-')
+    axs[i].plot(x,spring_torque_array,label = 'Spring',c='r',alpha = 0.3,linestyle='-')
     axs[i].plot(x,x*0,'k',alpha = 0.5,linestyle='dotted')
     axs[i].plot(x,weight_torque_array + spring_torque_array,label = 'Total',c='m')
 
@@ -103,23 +114,26 @@ for i in range(0,len(axs.reshape(-1))):
         (MINMAXES[i][0],0),
         MINMAXES[i][1]-MINMAXES[i][0],
         motor_torque*1000,
-        linewidth=0,
+        linewidth=2,
+        edgecolor='tab:orange',
         facecolor='tab:orange', # Blue fill color
         alpha=0.5 # 50% transparency
     )
-
     axs[i].add_patch(rect)
 
 
-    axs[i].text(0.025, 1-0.1, titles[i],
+    axs[i].text(0.025, 1-0.075, titles[i],
             horizontalalignment='left',
             verticalalignment='center',
-            transform=axs[i].transAxes)
+            transform=axs[i].transAxes,
+            fontsize = 9)
+    
+    
     axs[i].tick_params(axis='both',
                    which='both',
                    direction='in',)
 
-    axs[i].set_xticks(np.round(np.arange(-0,181,45),2))
+    axs[i].set_xticks(np.round(np.arange(-0,180,45),2))
     axs[i].xaxis.set_minor_locator(AutoMinorLocator(3))
     axs[i].set_yticks(np.round(np.arange(-100,101,100),2))        
     axs[i].yaxis.set_minor_locator(AutoMinorLocator(2))
@@ -135,7 +149,24 @@ axs[2].tick_params(axis='both',
                which='both',
                direction='in',)
 
+axs[0].annotate(
+    f'{W_plate_lb}lb Load',
+    xy=((MINMAXES[0][0] + MINMAXES[0][1]) / 2+2, motor_torque * 1000 * 6 / 8 ),
+    xytext=(0.2, 0.7),
+    textcoords='axes fraction',
+    arrowprops=dict(
+        arrowstyle='-',
+        color='black',      # arrow edge color
+        lw=1.5,
+        mutation_scale = 20
+    ),
+    fontsize=9
+)
 
-axs[0].legend(loc = 4,ncol = 2, columnspacing=0.5,handletextpad=0.2, fontsize = 9, handlelength = 1,facecolor = 'w',framealpha = 1,fancybox = False)
+
+
+
+
+axs[0].legend(loc = 4,ncol = 1, columnspacing=0.5,handletextpad=0.2, fontsize = 8.5, handlelength = 1,facecolor = 'w',framealpha = 1,fancybox = False)
 
 plt.show()

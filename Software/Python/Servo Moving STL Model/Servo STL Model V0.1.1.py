@@ -218,15 +218,10 @@ for i in range(points):
 print()
 print()
 
-print('MIN')
-print('A: %.4f' % (np.min(minmax_a*180/3.14)))
-print('B: %.4f' % (np.min(minmax_b*180/3.14)))
-print('C: %.4f' % (np.min(minmax_c*180/3.14)))
-
-print('MAX')
-print('A: %.4f' % (np.max(minmax_a*180/3.14)))
-print('B: %.4f' % (np.max(minmax_b*180/3.14)))
-print('C: %.4f' % (np.max(minmax_c*180/3.14)))
+print('[MIN,MAX]')
+print('MINMAX_A = [%.4f,%.4f]' % (np.min(minmax_a*180/3.141),np.max(minmax_a*180/3.141)))
+print('MINMAX_B = [%.4f,%.4f]' % (np.min(minmax_b*180/3.141),np.max(minmax_b*180/3.141)))
+print('MINMAX_C = [%.4f,%.4f]' % (np.min(minmax_c*180/3.141),np.max(minmax_c*180/3.141)))
 # 
 # print('MAX - MIN')
 # print('A: %.4f' % (np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14)))
@@ -251,7 +246,7 @@ def animate():
 
     if val == points:
         val = 0
-        print(step_counter)
+#         print(step_counter)
 
         
     for k in range(num_fingers):
