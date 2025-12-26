@@ -22,7 +22,6 @@ T = 75.66 # top digit height
 
 num_fingers = 5
 Offset_R    = 74.05  # From origin (0,0,0)
-# Offset_R    = 85   # From origin (0,0,0) # needs to be this
 
 R_tar       = 135  # Radius of target circle path 
 H_tar       = 220  # Height of target circle path
@@ -240,7 +239,7 @@ def animate():
 
     if val == points:
         val = 0
-#         print(step_counter)
+        print(step_counter)
 
         
     for k in range(num_fingers):

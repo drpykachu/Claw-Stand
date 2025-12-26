@@ -9,29 +9,35 @@ from pyvistaqt import QtInteractor
 import matplotlib.colors as mcolors
 from PyQt5.QtWidgets import QApplication, QMainWindow
 
+# ================= File Imports ===================
 from Claw_Functions import * # Home brew package
+stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\Python_STL\Holder_Motor_A_Python.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\Python_STL\Holder_Motor_B_Python.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\Python_STL\Holder_Motor_C_Python.STL"
+stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\Python_STL\Holder_Motor_T_Python.STL"
+
 
 
 # ================= Parameters ===================
 
 # Digit Lengths
-A = 57.38 # bottom digit + motor A height
-B = 60 # lower-middle digit + motor B height
-C = 60 # upper-middle middle 2 digit + motor B height
-T = 75.66 # top digit height
+
+A = 33.55 # bottom digit + motor A height
+B = 43.55 # lower-middle digit + motor B height
+C = 43.55 # upper-middle middle 2 digit + motor B height
+T = 50 # top digit height
 
 num_fingers = 5
-Offset_R    = 74.05  # From origin (0,0,0)
-# Offset_R    = 85   # From origin (0,0,0) # needs to be this
+Offset_R    = 75  # From origin (0,0,0)
 
-R_tar       = 135  # Radius of target circle path 
-H_tar       = 220  # Height of target circle path
+R_tar       = 100  # Radius of target circle path 
+H_tar       = 150  # Height of target circle path
 
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
 minstep     = 0.293    # stepper motor step angle
-speed       = 20   # Animation speed
+speed       = 1   # Animation speed
 
 
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -55,7 +61,9 @@ tex_off = 10 # tet distance away from point
 LW = 3 # Line width
 PS = 15 # Point Size
 
-
+vector_x = (1,0,0)
+vector_y = (0,1,0)
+vector_z = (0,0,1)
 # ================= PyVista / Qt ===================
 
 app = QApplication(sys.argv)
@@ -127,56 +135,49 @@ opacity_stl = 1
 opacity_color = "lightgray"
 
 # Motor A
-stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor A + bearing + base.STL"
-p = 'ALL'
-mesh = trimesh.load_mesh(stl_path_A)
-pointers, faces = mesh.vertices, mesh.faces
-motor_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-plotter.add_mesh(motor_poly_dict[f'F{p}M{0}'], color=opacity_color, opacity=opacity_stl)
-rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), (1,0,0), 90) # Gets the object flat
-translate_object(motor_poly_dict[f'F{p}M{0}'], (-118.5,101,0))        # Centers object
-rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
+for p in range(num_fingers):
+    mesh = trimesh.load_mesh(stl_path_A)
+    pointers, faces = mesh.vertices, mesh.faces
+    motor_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(motor_poly_dict[f'F{p}M{0}'], color=opacity_color, opacity=opacity_stl)
+    translate_object(motor_poly_dict[f'F{p}M{0}'], (-0.75,0,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{0}'], (-74.3071,0,0))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
+    rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -Offset_theta_master[p]) # Sets the position correctly
 
 # Motor B
-stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor B + bearing.STL"
+
 for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_B)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (1,0,0), 90) # Gets the object Up
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (-23,15,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), 180) # Flips to correct side
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-15))        # Lines up to motor center
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (-43.5/2,-17.375,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-5))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor C
-stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor C + bearing.STL"
+
 for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_C)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-    rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (1,0,0), 90) # Gets the object Up
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (-24,26,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), 0) # Flips to correct side
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A-15+B))        # Lines up to motor center
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (-25.0963/2,-43.5/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-5))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor T
-stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Stepper V0.1\Sub Assemblies\Motor T.STL"
+
 for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_T)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-    rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (1,0,0), 90) # Gets the object Up
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (-24,25,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), 180) # Flips to correct side
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A-15+B+C))        # Lines up to motor center
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25.0963/2,-43.5/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-5))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-
-
+    
 # === Animation ===
 delta_theta = np.zeros((3, num_fingers))
 
@@ -187,9 +188,7 @@ primerT = np.zeros((num_fingers))
 
 val = 0
 
-vector_x = (1,0,0)
-vector_y = (0,1,0)
-vector_z = (0,0,1)
+
 
 point1 = (0,0,A)
 point2 = (0, 0, A+B) # where the B joint is
@@ -228,16 +227,16 @@ print('MAX')
 print('A: %.4f' % (np.max(minmax_a*180/3.14)))
 print('B: %.4f' % (np.max(minmax_b*180/3.14)))
 print('C: %.4f' % (np.max(minmax_c*180/3.14)))
-
-print('MAX - MIN')
-print('A: %.4f' % (np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14)))
-print('B: %.4f' % (np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14)))
-print('C: %.4f' % (np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14)))
-
-print('Number Steps')
-print('A: %.1f' % ((np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14))/minstep))
-print('B: %.1f' % ((np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14))/minstep))
-print('C: %.1f' % ((np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14))/minstep))
+# 
+# print('MAX - MIN')
+# print('A: %.4f' % (np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14)))
+# print('B: %.4f' % (np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14)))
+# print('C: %.4f' % (np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14)))
+# 
+# print('Number Steps')
+# print('A: %.1f' % ((np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14))/minstep))
+# print('B: %.1f' % ((np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14))/minstep))
+# print('C: %.1f' % ((np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14))/minstep))
 
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
 theta_a = 361.0
@@ -252,7 +251,7 @@ def animate():
 
     if val == points:
         val = 0
-#         print(step_counter)
+        print(step_counter)
 
         
     for k in range(num_fingers):
@@ -276,21 +275,21 @@ def animate():
                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
                 theta_a += step_change
-                step_counter[0] += step_change
+                step_counter[0] += np.rad2deg(step_change)/minstep
 
             err = theta_reals[1] - theta_b
             if abs(np.rad2deg(err)) > minstep:
                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
                 theta_b += step_change
-                step_counter[1] += step_change
+                step_counter[1] += np.rad2deg(step_change)/minstep
 
             err = theta_reals[2] - theta_c
             if abs(np.rad2deg(err)) > minstep:
                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
                 theta_c += step_change
-                step_counter[2] += step_change
+                step_counter[2] += np.rad2deg(step_change)/minstep
 
 
 
@@ -309,9 +308,8 @@ def animate():
                 
             master_path_plot = rotate_vector(master_path[k], Offset_theta)
             lines_poly_dict[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
-            
+             
             ############ Rotates Motor B Segment ############
-
             
             # Casts it back to center for easier rotational math
             rotate_around_line(motor_poly_dict[f'F{k}M{1}'], (0,0,0), vector_z, -Offset_theta_master[k]) # Sets the position correctly

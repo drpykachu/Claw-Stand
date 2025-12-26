@@ -3,36 +3,39 @@ import matplotlib.pyplot as plt
 
 
 # Digit Lengths
-A = 57.38 # bottom digit + motor A height
-B = 60 # lower-middle digit + motor B height
-C = 60 # upper-middle middle 2 digit + motor B height
-T = 75.66 # top digit height mm
-titles = ['Motor A Torque', 'Motor B Torque', 'Motor C Torque']
+A = 33.55 # bottom digit + motor A height
+B = 43.55 # lower-middle digit + motor B height
+C = 43.55 # upper-middle middle 2 digit + motor B height
+T = 50    # top digit height
+
+titles = ['Motor C Torque', 'Motor B Torque', 'Motor A Torque']
 
 # individual sections
 weight_bearing = 13 / 1000 # kg
-weight_motor =   40 / 1000 # kg
+weight_motor =   21 / 1000 # kg
+
+Holder_Motor_B_Weight = 17 / 1000 #kg
+Holder_Motor_C_Weight = 15 / 1000 #kg
+Holder_Motor_T_Weight = 8  / 1000 #kg
+
+# weights to move (worst case, at the end of the arm)
+Holder_Motor_C_Weight2Move = Holder_Motor_T_Weight 
+Holder_Motor_B_Weight2Move = Holder_Motor_C_Weight2Move + Holder_Motor_C_Weight + weight_motor + weight_bearing
+Holder_Motor_A_Weight2Move = Holder_Motor_B_Weight2Move + Holder_Motor_B_Weight + weight_motor + weight_bearing
 
 
 lengths = np.array([B,C,T])/1000
-weights = [38/1000 + weight_bearing + weight_motor + 44/1000 + weight_bearing + weight_motor+ 27/1000,44/1000 + weight_bearing + weight_motor+ 27/1000,27/1000]
+weights = [Holder_Motor_C_Weight2Move,Holder_Motor_B_Weight2Move,Holder_Motor_A_Weight2Move]
 
 # Overall
-################## Need to do some testing.
+motor_torque = 58.8399/1000 #N·m, Motor Strength
+K_array = np.array([0,0,0]) # in•lbf, Spring Strength
 
-# This is stock (unipolar): 
-motor_torque = 34.3/1000 #N·m
-
-# This is stock (bipolar):
-# https://www.youtube.com/watch?v=lLF9_rc9G3I&t=16s
-motor_torque = 100/1000 #N·m
-
-
-W_plate = 0  /  2.20462 # kg
+W_plate = 1  /  2.20462 # kg
 theta_deflection = 270
 inlbf2Nm = 1 / 8.85075 # in•lbf / N•m
 
-K_array = np.array([1,0,0.465])
+
 K_array = K_array*inlbf2Nm / theta_deflection  # N•m/theta
 G = 9.8 # m /s^2
 
@@ -47,7 +50,7 @@ x = np.linspace(0,180,361)
 for i in range(0,len(axs.reshape(-1))):
     L = lengths[i]
     K = K_array[i]
-    M = weights[i]
+    M = weights[i] + W_plate/4 # four active fingers at a time
     weight_torque_array = []
     spring_torque_array = []
     motor_torque_array = []

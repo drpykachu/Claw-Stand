@@ -25,14 +25,14 @@ motor_torque = 34.3/1000 #N·m
 
 # This is stock (bipolar):
 # https://www.youtube.com/watch?v=lLF9_rc9G3I&t=16s
-motor_torque = 100/1000 #N·m
+# motor_torque = 100/1000 #N·m
 
 
 W_plate = 0  /  2.20462 # kg
 theta_deflection = 270
 inlbf2Nm = 1 / 8.85075 # in•lbf / N•m
 
-K_array = np.array([1,0,0.465])
+K_array = np.array([0,0,0.465])
 K_array = K_array*inlbf2Nm / theta_deflection  # N•m/theta
 G = 9.8 # m /s^2
 
