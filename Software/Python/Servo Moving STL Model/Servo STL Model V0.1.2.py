@@ -31,7 +31,7 @@ num_fingers = 5
 Offset_R    = 75  # From origin (0,0,0)
 
 R_tar       = 100  # Radius of target circle path 
-H_tar       = 150  # Height of target circle path
+H_tar       = 160  # Height of target circle path
 
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
@@ -215,27 +215,6 @@ for i in range(points):
         minmax_c[i] = theta_c
     except:
         print('WARNING - not all points in path have a solution.')
-
-
-print()
-
-print('[MIN,MAX]')
-print('MINMAX_A = [%.4f,%.4f]' % (np.min(minmax_a*180/3.141),np.max(minmax_a*180/3.141)))
-print('MINMAX_B = [%.4f,%.4f]' % (np.min(minmax_b*180/3.141),np.max(minmax_b*180/3.141)))
-print('MINMAX_C = [%.4f,%.4f]' % (np.min(minmax_c*180/3.141),np.max(minmax_c*180/3.141)))
-
-arr = minmax_a*180/3.141*master_path_load[0]
-non_zero_values_a = arr[arr != 0]
-arr = minmax_b*180/3.141*master_path_load[1]
-non_zero_values_b = arr[arr != 0]
-arr = minmax_c*180/3.141*master_path_load[2]
-non_zero_values_c = arr[arr != 0]
-
-print()
-print('[MIN,MAX] - LOAD')
-print('MINMAX_A = [%.4f,%.4f]' % (np.min(non_zero_values_a),np.max(non_zero_values_a)))
-print('MINMAX_B = [%.4f,%.4f]' % (np.min(non_zero_values_b),np.max(non_zero_values_b)))
-print('MINMAX_C = [%.4f,%.4f]' % (np.min(non_zero_values_c),np.max(non_zero_values_c)))
 
 
 # print('Number Steps')
