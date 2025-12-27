@@ -103,7 +103,7 @@ def circle(r, h, degree):
 
 def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     """Builds the path for the fingertip travel."""
-    exponent = 6
+    exponent = 4
     num_fingers_p1 = num_fingers+1
     
     class PointCount(Exception):
@@ -127,6 +127,7 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
      
     total_path = np.concatenate((top_path, bot_path), axis=1)
+
     return total_path
 
 

@@ -10,9 +10,12 @@ C = 43.55 # mm, upper-middle middle 2 digit + motor B height
 T = 43.55    # mm, top digit height
 
 #minmax angles, from the STL model
+
+
 MINMAX_A = [66.7754,113.2585]
-MINMAX_B = [8.3722,53.9247]
-MINMAX_C = [102.9919,115.7924]
+MINMAX_B = [33.7293,53.9247]
+MINMAX_C = [102.9919,106.3376]
+
 MINMAXES = [MINMAX_C,MINMAX_B,MINMAX_A]
 
 titles = ['i.) Top Motor (C)', 'ii.) Middle Motor (B)', 'iii.) Bottom Motor (A)']
@@ -41,9 +44,9 @@ W_plate = W_plate/4 # kg, only 4 fingers will hold at a time
 # Overall
 # The torque (stalled) is 2.3kg.cm@6V
 # The torque (moving)  is 0.7kg.cm@6V
-kgcm2mNm = 98.0665 # N•m / Kg•cm
-motor_torque = 1.29 #Kg•cm
+motor_torque = 1.3 #Kg•cm
 
+kgcm2mNm = 98.0665 # N•m / Kg•cm
 motor_torque = motor_torque * kgcm2mNm / 1000 #N·m, Motor Strength
 K_constant = 1.4  # in•lbf, Spring Strength
 K_array = np.ones(3)*K_constant
@@ -51,7 +54,7 @@ K_array = np.ones(3)*K_constant
 inlbf2Nm = 1 / 8.85075 # in•lbf / N•m
 theta_deflection = 270
 K_array = K_array*inlbf2Nm / theta_deflection  # N•m/theta
-G = 9.8 # m /s^2
+G = 9.8 # m /                s^2
 
 fig, axs = plt.subplots(3,1,sharex = True,sharey = True,figsize=(3, 6),constrained_layout=True)
 fig.canvas.manager.window.move(500,0)
