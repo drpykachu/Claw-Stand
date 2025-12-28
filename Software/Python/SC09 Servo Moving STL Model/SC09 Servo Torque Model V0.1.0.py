@@ -47,7 +47,7 @@ SPRING_K = (SPRING_K / 8.85075) / 270
 G = 9.8
 
 # Load
-PLATE_LB = 0
+PLATE_LB = 1
 PLATE_KG = (PLATE_LB / 2.20462) / 4
 
 # ================= GUI ==============================
@@ -110,7 +110,7 @@ def motor_loads(active):
     lengths = np.array([
         [0, 0, T / 1000],
         [0, B / 1000, B / 1000], #since T is worst case at like 90, i kept it as B length
-        [C / 1000, B / 1000, T/ 1000],
+        [C / 1000, (B+C) / 1000, (B+C+T)/ 1000],
     ])
 
     return weights, lengths
@@ -176,7 +176,8 @@ def update(idx):
             )
         )
 
-        ax.text(0.03, 0.92, titles[i], transform=ax.transAxes, fontsize=9)
+        ax.text(0.8, 0.875, f'{PLATE_LB} lb Load', transform=ax.transAxes, fontsize=9)
+        ax.text(0.03, 0.875, titles[i], transform=ax.transAxes, fontsize=9)
         ax.set_xlim(0, 180)
         ax.set_ylim(-200, 200)
         ax.xaxis.set_minor_locator(AutoMinorLocator(3))
@@ -189,7 +190,6 @@ def update(idx):
         ax.set_xlabel(r"Theta / $\theta$")
         
         
-    axs[0].text(0.70, 0.92, f'{PLATE_LB}lb Load', transform=axs[0].transAxes, fontsize=9)
 
     
     axs[0].legend(loc = 4,

@@ -59,7 +59,7 @@ joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
 rose_color = 'grey'
 tex_off = 10 # tet distance away from point
 LW = 3 # Line width
-PS = 15 # Point Size
+PS = 1 # Point Size
 
 vector_x = (1,0,0)
 vector_y = (0,1,0)
