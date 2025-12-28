@@ -1,6 +1,6 @@
 # 🦾 Claw Stand (Work in Progress)
 
-### Hello all! 
+## Hello all! 
 
 This project is inspired by the **BattleBots claw stand robot**:
 
@@ -10,7 +10,7 @@ This project is inspired by the **BattleBots claw stand robot**:
 
 ---
 
-### Overview
+## Part 1: Doing Some Math
 
 Each finger in the claw contains **3 motors** — **Motor A**, **Motor B**, and **Motor C**.  
 Each motor rotates by an angle:  
@@ -66,7 +66,7 @@ $$
 Y_p = B\cos\theta_a + C'\cos\theta_a + T'\cos\theta_a
 $$
 
-Substitute: $ C' = C\sin\theta_b, \quad T' = T\sin\theta_d $
+Substitute: $C' = C\sin\theta_b, \quad T' = T\sin\theta_d$
 
 So:
 
@@ -98,7 +98,7 @@ $$
 \theta_a = atan2(\frac{Z_p - A}{Y_p})
 $$
 
-#### *Note: atan2 provides the quadrant is used as atan loses information regarding negatives.
+#### *Note: atan2 provides the quadrant and is used here, as atan loses information regarding negatives and associated quadrants.
 ---
 
 ## Step 2 — Solving for $\theta_b$ and $\theta_d$
@@ -294,3 +294,67 @@ def solve_thetas(Zp, Yp, Xp, A, B, C, T, Offset_R):
 <div align="center">
   <img src="assets/Cropped Modeled Claw.gif" alt="Python Model" />
 </div>
+
+---
+
+## Part 2: Picking Some Parts.
+
+Here we will discuss the hardware necessary for porting over the mathmatical model to the a real world model. 
+
+---
+### The Motor:
+
+There are several classes of motor that would work for this project, but servo motors are chosen as the range of movement (<180°), built-in rotary encoder (for position tracking and tuning with PID), and step accuracy (the smaller the better) are too good to pass up for this project. The mathemetical demonstration in the Python Model Implementation section above has the minimum and maximum angles for the motors as:
+
+| Motor            | Min Angle | Max Angle | Delta Angle|
+|------------------|------|------|------|
+| Top (Motor C)    |  68.4    | 111.5     | 43.1   |
+| Middle (Motor B) |  20.8    |  77.1    |  56.1   |
+| Bottom (Motor A) |  87.8    |  109.7    |  21.9  |
+
+I've used the [Waveshare 2.3kg Serial Bus Servo](https://www.waveshare.com/sc09-servo.htm) from Waveshare in the past with much success. Plus, these motors have a serial interface which allows them to be easily controlled by a Raspberry Pi, which I will also be using for the logic-processing aspect of this project.
+
+### The Waveshare 2.3kg Serial Bus Servo Motor
+
+These things pack quite a punch for their small size. The aspects we really care about for this project are:
+
+| Specification                                     | Impact |
+|---------------------------------------------------|--------|
+| Dimensions: 23.2 × 12.0 × 25.5 mm                 | Positioning       |
+| Position Sensor Resolution: 0.293° (300° / 1024)  | Positioning       |
+| Gear Type: High-precision metal gear              | Positioning       |
+| Max Locked-Rotor Torque: 2.3 kg·cm @ 6 V          | Torque Calculation       |
+| Rated Torque: 0.7 kg·cm @ 6 V                     | Torque Calculation       |
+| No-load Speed: 0.1 s / 60° (≈ 100 RPM) @ 6 V      | Torque Calculation       |
+| Operating Voltage: 4.8 – 8.4 V                    | Power Supply Selection       |  
+| No-load Current: 150 mA @ 6 V                     | Power Supply Selection       |
+| Locked-Rotor Current (Stall): 1.0 A               | Power Supply Selection       |
+
+### Positioning:
+
+#### Dimensions:
+
+Using the provided information of the motor sizes (23.2 × 12.0 × 25.5 mm), the Ball-And-Stick (BAS) model can be adjusted to reflect how these motors would behave. I used a CAD modeling software to create motor holders and joints to simulate how it would behave in real life. This is also a good sanity check to get $R_{offset}$, path height, and path radius to ensure the fingers don't crash into each other:
+
+#### Position Sensor Resolution:
+
+The BAS model has the oversight of showing us how the model would react with perfect decimal-point accuracy. In the real world, motors have an angle, the step angle or resolution angle, of how small they can exert movement in discrete steps. For instance, a large step can lead to unwanted behavior. Here is the model with a 2° step (notice the choppiness and inaccurate positioning on the the wanted path):
+
+<div align="center">
+  <img src="assets/Actual Claw Big Step.gif" alt="Actual Model 2°" />
+</div>
+
+
+
+<br>
+
+Luckily, the Waveshare 2.3kg Serial Bus Servo Motor utilizes a gearbox to obtain a step size of 0.293°:
+
+<div align="center">
+  <img src="assets/Actual Claw.gif" alt="Actual Model" />
+</div>
+
+
+#### Gear Type:
+
+Uh-oh..... "High-precision metal gear"..... "Gearbox".... that's not good. Gearboxes are good for increasing torque and increasing position resolution, but they are bad because they introduce *backlash*

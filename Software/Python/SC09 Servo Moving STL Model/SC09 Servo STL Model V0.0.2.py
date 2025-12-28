@@ -11,10 +11,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 
 # ================= File Imports ===================
 from Claw_Functions import * # Home brew package
-stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\SC09\Python_STL\SC09_Holder_Motor_A_Python.STL"
-stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\SC09\\Python_STL\SC09_Holder_Motor_B_Python.STL"
-stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\SC09\\Python_STL\SC09_Holder_Motor_C_Python.STL"
-stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo V0.1\SC09\\Python_STL\SC09_Holder_Motor_T_Python.STL"
+stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_A_Python.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_B_Python.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_C_Python.STL"
+stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_T_Python.STL"
 
 # ================= Parameters ===================
 
@@ -215,10 +215,11 @@ for i in range(points):
         print('WARNING - not all points in path have a solution.')
 
 
-# print('Number Steps')
-# print('A: %.1f' % ((np.max(minmax_a*180/3.14) - np.min(minmax_a*180/3.14))/minstep))
-# print('B: %.1f' % ((np.max(minmax_b*180/3.14) - np.min(minmax_b*180/3.14))/minstep))
-# print('C: %.1f' % ((np.max(minmax_c*180/3.14) - np.min(minmax_c*180/3.14))/minstep))
+print('[MIN,MAX]')
+print('MINMAX_A = [%.4f,%.4f]' % (np.min(minmax_a*180/3.141),np.max(minmax_a*180/3.141)))
+print('MINMAX_B = [%.4f,%.4f]' % (np.min(minmax_b*180/3.141),np.max(minmax_b*180/3.141)))
+print('MINMAX_C = [%.4f,%.4f]' % (np.min(minmax_c*180/3.141),np.max(minmax_c*180/3.141)))
+
 
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
 theta_a = 361.0
