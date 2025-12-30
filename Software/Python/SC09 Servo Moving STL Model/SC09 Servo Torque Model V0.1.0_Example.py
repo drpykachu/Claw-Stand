@@ -45,9 +45,10 @@ MOTOR_TORQUE = MOTOR_TORQUE_KGCM * 98.0665 / 1000
 SPRING_K = 1.4 # from McMaster Carr
 SPRING_K = (SPRING_K / 8.85075) / 270
 G = 9.8
-
+print(SPRING_K)
 # Load
-PLATE_LB = 194.9 /453.592 
+PLATE_LB = 0 /453.592
+PLATE_LB = 0.5
 PLATE_KG = (PLATE_LB / 2.20462) / 4
 
 # ================= GUI ==============================
@@ -56,8 +57,8 @@ root = tk.Tk()
 root.title("3D Finger Model - Degree Control")
 
 fig, axs = plt.subplots(
-    3, 1, sharey=True,
-    figsize=(3, 6),
+    1, 3, sharex=True, sharey=True,
+    figsize=(6, 3),
     constrained_layout=True
 )
 
@@ -144,7 +145,7 @@ def update(idx):
     minmax = compute_operating_angles(master_path, load_mask)
 
     x = np.linspace(0, 180, 361)
-    titles = ["i.) Top Motor (C)", "ii.) Middle Motor (B)", "iii.) Bottom Motor (A)"]
+    titles = ["Top Motor (C)", "Middle Motor (B)", "Bottom Motor (A)"]
 
     for i, ax in enumerate(axs):
         ax.cla()
@@ -173,16 +174,17 @@ def update(idx):
                 MOTOR_TORQUE * 1000,
                 alpha=0.5,
                 color="tab:orange",
+                label = 'Load',
             )
         )
 
-        ax.text(0.75, 0.875, r'%.2f lb Load' % PLATE_LB, transform=ax.transAxes, fontsize=9)
-        ax.text(0.03, 0.875, titles[i], transform=ax.transAxes, fontsize=9)
+        ax.text(0.05, 0.05, r'%.2f lb Load' % PLATE_LB, transform=ax.transAxes, fontsize=9)
+        ax.text(0.05, 0.9, titles[i], transform=ax.transAxes, fontsize=9)
         ax.set_xlim(0, 180)
+        ax.set_xticks(range(0,136,45))
         ax.set_ylim(-200, 200)
         ax.xaxis.set_minor_locator(AutoMinorLocator(3))
         ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-        ax.set_ylabel("Torque / mN·m")
         ax.tick_params(axis='both',
                        which='both',
                        direction='in',)    
@@ -191,6 +193,7 @@ def update(idx):
         
         
 
+    axs[0].set_ylabel("Torque / mN·m")
     
     axs[0].legend(loc = 4,
                   ncol = 1,
