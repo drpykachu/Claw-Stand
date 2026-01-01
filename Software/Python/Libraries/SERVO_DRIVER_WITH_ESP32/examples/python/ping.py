@@ -34,7 +34,7 @@ BAUDRATE                = 38400         # Driver board default baudrate : 115200
 DEVICENAME              = 'COM15'    # Check which port is being used on your controller
                                             # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
 
-protocol_end            = 0                 # SCServo bit end(STS/SMS=0, SCS=1)
+protocol_end            = 1                 # SCServo bit end(STS/SMS=0, SCS=1)
 
 # Initialize PortHandler instance
 # Set the port path

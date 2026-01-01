@@ -2,7 +2,7 @@
 from scservo_sdk import *
 
 DEVICENAME = 'COM15'
-BAUDRATE   = 115200
+BAUDRATE   = 1000000
 SCS_ID     = 1
 protocol_end = 0
 
