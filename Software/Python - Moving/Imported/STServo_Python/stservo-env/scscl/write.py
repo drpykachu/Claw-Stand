@@ -33,11 +33,11 @@ from scservo_sdk import *                 # Uses SC Servo SDK library
 # Default setting
 SCS_ID                      = 1                 # SC Servo ID : 1
 BAUDRATE                    = 1000000           # SC Servo default baudrate : 1000000
-DEVICENAME                  = 'COM7'    # Check which port is being used on your controller
+DEVICENAME                  = 'COM15'    # Check which port is being used on your controller
                                                 # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
 SCS_MINIMUM_POSITION_VALUE  = 10          # SC Servo will rotate between this value
 SCS_MAXIMUM_POSITION_VALUE  = 1000
-SCS_MOVING_SPEED            = 1000        # SC Servo moving speed
+SCS_MOVING_SPEED            = 100        # SC Servo moving speed
 
 index = 0
 scs_goal_position = [SCS_MINIMUM_POSITION_VALUE, SCS_MAXIMUM_POSITION_VALUE]         # Goal position

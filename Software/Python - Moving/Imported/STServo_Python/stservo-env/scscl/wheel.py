@@ -33,7 +33,7 @@ from scservo_sdk import *                 # Uses SC Servo SDK library
 # Default setting
 SCS_ID                      = 1                 # SC Servo ID : 1
 BAUDRATE                    = 1000000           # SC Servo default baudrate : 1000000
-DEVICENAME                  = 'COM7'    # Check which port is being used on your controller
+DEVICENAME                  = 'COM15'    # Check which port is being used on your controller
                                                 # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
 SCS_MOVING_SPEED0           = 500         # SC Servo moving speed
 SCS_MOVING_SPEED1           = -500        # SC Servo moving speed
