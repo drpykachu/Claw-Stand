@@ -25,7 +25,7 @@ B = 43.55 # lower-middle digit + motor B height
 C = 43.55 # upper-middle middle 2 digit + motor B height
 T = 50 # top digit height
 
-num_fingers = 1
+num_fingers = 5
 Offset_R    = 75  # From origin (0,0,0)
 
 R_tar       = 100  # Radius of target circle path 
@@ -47,12 +47,35 @@ path_load = int(points/num_fingers*(num_fingers-1))
 master_path_load = np.concatenate((np.ones((num_fingers,1,path_load)), np.zeros((num_fingers,1,points - path_load))), axis=2)# Allocates data for shifted finger path, load path
 
 
-for i in range(num_fingers):
-    """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
-    shifter = int(points / (num_fingers) * i)
-    shifted = np.roll(fingertip_path, shift=shifter, axis=1)
-    master_path[i] = shifted
+#############
+# ROLLING PATTERN
+# for i in range(num_fingers):
+#     """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+#     shifter = int(points / (num_fingers) * i)
+#     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+#     master_path[i] = shifted
 
+
+
+# STAR PATTERN SHIFT (e.g. 1→3→5→2→4 for 5 fingers)
+# Uses modular stepping to assign shifts in a star order instead of sequential order
+
+step = 2                      # star step (works for odd num_fingers)
+spacing = int(points / num_fingers)
+
+order = []
+current = 0
+while current not in order:
+    order.append(current)
+    current = (current + step) % num_fingers
+
+for shift_idx, finger_idx in enumerate(order):
+    shifter = spacing * shift_idx
+    shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+    master_path[finger_idx] = shifted
+############
+    
+    
 # Plot Settings
 path_colors = ['tab:green','red','tab:orange','cyan','magenta']
 joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
@@ -152,32 +175,32 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (-54.3/2,-50.781,0))        # Centers object
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A))        # Lines up to motor center
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (-54.3/2,-22.791,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R-6,0,A-6.5))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor C
 
-# for p in range(num_fingers):
-#     mesh = trimesh.load_mesh(stl_path_C)
-#     pointers, faces = mesh.vertices, mesh.faces
-#     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-#     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-#     translate_object(motor_poly_dict[f'F{p}M{2}'], (-25.0963/2,-43.5/2,0))        # Centers object
-#     translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-5))        # Centers object
-#     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-# 
-# # Motor T
-# 
-# for p in range(num_fingers):
-#     mesh = trimesh.load_mesh(stl_path_T)
-#     pointers, faces = mesh.vertices, mesh.faces
-#     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-#     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-#     translate_object(motor_poly_dict[f'F{p}M{3}'], (-25.0963/2,-43.5/2,0))        # Centers object
-#     translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-5))        # Centers object
-#     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-#     
+for p in range(num_fingers):
+    mesh = trimesh.load_mesh(stl_path_C)
+    pointers, faces = mesh.vertices, mesh.faces
+    motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (-12.574,-54.75/2-5,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-6.5))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+
+# Motor T
+
+for p in range(num_fingers):
+    mesh = trimesh.load_mesh(stl_path_T)
+    pointers, faces = mesh.vertices, mesh.faces
+    motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (-12.574,-54.75/2-5,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-6.5))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+    
 # === Animation ===
 delta_theta = np.zeros((3, num_fingers))
 
@@ -375,7 +398,7 @@ def animate():
     val += 1
 
 timer = QTimer()
-# timer.timeout.connect(animate)
+timer.timeout.connect(animate)
 timer.start(speed) # set speed in ms
 
 # === Show window ===
