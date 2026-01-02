@@ -11,10 +11,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 
 # ================= File Imports ===================
 from Claw_Functions import * # Home brew package
-stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_A_Python.STL"
-stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_B_Python.STL"
-stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_C_Python.STL"
-stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.1 - Bearing\Python_STL\SC09_Holder_Motor_T_Python.STL"
+stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.2 - Bushing\Python_STL\SC09_Holder_Motor_A_Python.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.2 - Bushing\Python_STL\SC09_Holder_Motor_B_Python.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.2 - Bushing\Python_STL\SC09_Holder_Motor_C_Python.STL"
+stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo\SC09\V0.2 - Bushing\Python_STL\SC09_Holder_Motor_T_Python.STL"
 
 # ================= Parameters ===================
 
@@ -47,11 +47,33 @@ path_load = int(points/num_fingers*(num_fingers-1))
 master_path_load = np.concatenate((np.ones((num_fingers,1,path_load)), np.zeros((num_fingers,1,points - path_load))), axis=2)# Allocates data for shifted finger path, load path
 
 
-for i in range(num_fingers):
-    """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
-    shifter = int(points / (num_fingers) * i)
+############# PATTERNS #############
+# # ROLLING PATTERN SHIFT
+# for i in range(num_fingers):
+#     """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+#     shifter = int(points / (num_fingers) * i)
+#     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+#     master_path[i] = shifted
+
+
+
+# STAR PATTERN SHIFT (e.g. 1→3→5→2→4 for 5 fingers)
+# Uses modular stepping to assign shifts in a star order instead of sequential order
+
+step = 2                      # star step (works for odd num_fingers)
+spacing = int(points / num_fingers)
+
+order = []
+current = 0
+while current not in order:
+    order.append(current)
+    current = (current + step) % num_fingers
+
+for shift_idx, finger_idx in enumerate(order):
+    shifter = spacing * shift_idx
     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
-    master_path[i] = shifted
+    master_path[finger_idx] = shifted
+######################################
 
 # Plot Settings
 path_colors = ['tab:green','red','tab:orange','cyan','magenta']
@@ -153,7 +175,8 @@ for p in range(num_fingers):
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
     translate_object(motor_poly_dict[f'F{p}M{1}'], (-43.5/2,-17.375,0))        # Centers object
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-5))        # Lines up to motor center
+#     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-6.5))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor C
@@ -164,7 +187,8 @@ for p in range(num_fingers):
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
     translate_object(motor_poly_dict[f'F{p}M{2}'], (-25.0963/2,-43.5/2,0))        # Centers object
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-5))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-6.5))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor T
@@ -175,7 +199,8 @@ for p in range(num_fingers):
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
     translate_object(motor_poly_dict[f'F{p}M{3}'], (-25.0963/2,-43.5/2,0))        # Centers object
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-5))        # Centers object
+#     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-6.5))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
     
 # === Animation ===
@@ -213,13 +238,6 @@ for i in range(points):
         minmax_c[i] = theta_c
     except:
         print('WARNING - not all points in path have a solution.')
-
-
-print('[MIN,MAX]')
-print('MINMAX_A = [%.4f,%.4f]' % (np.min(minmax_a*180/3.141),np.max(minmax_a*180/3.141)))
-print('MINMAX_B = [%.4f,%.4f]' % (np.min(minmax_b*180/3.141),np.max(minmax_b*180/3.141)))
-print('MINMAX_C = [%.4f,%.4f]' % (np.min(minmax_c*180/3.141),np.max(minmax_c*180/3.141)))
-
 
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
 theta_a = 361.0
