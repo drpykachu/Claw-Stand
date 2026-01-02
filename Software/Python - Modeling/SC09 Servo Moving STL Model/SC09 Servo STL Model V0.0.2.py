@@ -174,7 +174,7 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (-43.5/2,-17.375,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (-45.5/2,-17.375,0))        # Centers object
 #     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-6.5))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
@@ -186,7 +186,7 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (-25.0963/2,-43.5/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (-25.0963/2,-45.5/2,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-6.5))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
@@ -198,7 +198,7 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25.0963/2,-43.5/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25.0963/2,-45.5/2,0))        # Centers object
 #     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-6.5))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
