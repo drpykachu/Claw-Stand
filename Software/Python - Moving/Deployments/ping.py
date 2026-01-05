@@ -10,6 +10,7 @@
 
 import os
 
+
 if os.name == 'nt':
     import msvcrt
     def getch():
@@ -29,7 +30,7 @@ else:
 from scservo_sdk import *                 # Uses SCServo SDK library
 
 # Default setting
-SCS_ID                  = 1                 # SCServo ID : 1
+SCS_ID                  = 2                 # SCServo ID : 1
 BAUDRATE                = 1000000         # Driver board default baudrate : 115200
 DEVICENAME              = 'COM15'    # Check which port is being used on your controller
                                             # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
@@ -66,13 +67,15 @@ else:
 
 # Try to ping the SCServo
 # Get SCServo model number
-scs_model_number, scs_comm_result, scs_error = packetHandler.ping(portHandler, SCS_ID)
-if scs_comm_result != COMM_SUCCESS:
-    print("%s" % packetHandler.getTxRxResult(scs_comm_result))
-elif scs_error != 0:
-    print("%s" % packetHandler.getRxPacketError(scs_error))
-else:
-    print("[ID:%03d] ping Succeeded. SCServo model number : %d" % (SCS_ID, scs_model_number))
+SCS_ID_RANGE = [2,3,4]
+for SCS_ID in SCS_ID_RANGE:
+    scs_model_number, scs_comm_result, scs_error = packetHandler.ping(portHandler, SCS_ID)
+    if scs_comm_result != COMM_SUCCESS:
+        print("%s" % packetHandler.getTxRxResult(scs_comm_result))
+    elif scs_error != 0:
+        print("%s" % packetHandler.getRxPacketError(scs_error))
+    else:
+        print("[ID:%03d] ping Succeeded. SCServo model number : %d" % (SCS_ID, scs_model_number))
 
 # Close port
 portHandler.closePort()

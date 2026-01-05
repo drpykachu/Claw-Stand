@@ -39,8 +39,8 @@ ADDR_STS_PRESENT_POSITION  = 56
 # Default setting
 SCS1_ID                     = 1                 # SCServo#1 ID : 1
 SCS2_ID                     = 2                 # SCServo#1 ID : 2
-BAUDRATE                    = 115200           # Driver board default baudrate : 115200
-DEVICENAME                  = '/dev/ttyUSB0'    # Check which port is being used on your controller
+BAUDRATE                    = 1000000           # Driver board default baudrate : 115200
+DEVICENAME                  = 'COM15'    # Check which port is being used on your controller
                                                 # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
 
 SCS_MINIMUM_POSITION_VALUE  = 100               # SCServo will rotate between this value
