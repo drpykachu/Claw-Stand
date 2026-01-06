@@ -158,46 +158,71 @@ theta_b = 361.0
 theta_c = 361.0
 
 step_counter = np.zeros(3)*0
-# Initialize current angles separately for each joint & finger
-current_theta = np.full((3, num_fingers), np.nan)  # nan = uninitialized
 
 while True:
     time.sleep(speed)
     if val == points:
         val = 0
-
-    for k in range(num_fingers):
+        print('done')
+        break
+    for k in range(1):
         try:
-            Xtar, Ytar, Ztar = master_path[k, :, val]
+            ### Finding angles and rebuilding fingers
+            Xtar, Ytar, Ztar = master_path[k, :, int(val)] 
             Offset_theta = Offset_theta_master[k]
-            Xtar_new, Ytar_new = rotate_point((0,0), (Xtar, Ytar), Offset_theta)
+            Xtar_new, Ytar_new = rotate_point((0,0), (Xtar, Ytar),Offset_theta)
+            Ztar_new = Ztar
             
-            # Solve IK for target angles
-            theta_target = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T, Offset_R)[0]
+            theta_reals = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0]
+            
 
-            # Initialize if first loop
-            if np.isnan(current_theta[0,k]):
-                current_theta[:,k] = theta_target
+            # checks for a change in angle based on the stepper motor step. makes it go from indefinite to a real world
+            if theta_a == 361.0:
+                theta_a = theta_reals[0]
+                theta_b = theta_reals[1]
+                theta_c = theta_reals[2]
+            
+            err = theta_reals[0] - theta_a
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_a += step_change
+                step_counter[0] += np.rad2deg(step_change)/minstep
 
-            # Interpolate angles individually
-            for joint in range(3):
-                err_deg = np.rad2deg(theta_target[joint] - current_theta[joint,k])
-                if abs(err_deg) > minstep:
-                    step = np.sign(err_deg) * np.deg2rad(minstep)
-                    current_theta[joint,k] += step
-                else:
-                    current_theta[joint,k] = theta_target[joint]
+            err = theta_reals[1] - theta_b
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_b += step_change
+                step_counter[1] += np.rad2deg(step_change)/minstep
 
-            # Move motors for finger 0 (example)
+            err = theta_reals[2] - theta_c
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_c += step_change
+                step_counter[2] += np.rad2deg(step_change)/minstep
+
+            ########## MOVES MOTORS ##########
+            
             if k == 0:
-                theta_a, theta_b, theta_c = current_theta[:,0]
-                move(angle360_to_pos(360-(np.rad2deg(theta_a)+90-17)), 2)
-                move(angle360_to_pos(np.rad2deg(theta_b)+90), 3)
-                move(angle360_to_pos(360-(np.rad2deg(theta_c) - np.rad2deg(theta_b)+90)-90), 4)
+                print((360-(np.rad2deg(theta_c) - np.rad2deg(theta_b)+90)-90))
+                move(angle360_to_pos(360-(np.rad2deg(theta_a)+90-17)),2)
+                move(angle360_to_pos(np.rad2deg(theta_b)+90),3)
+                move(angle360_to_pos(360-(np.rad2deg(theta_c) - np.rad2deg(theta_b)+90)-90),4)
 
-        except Exception as e:
-            print(f'Error: {e}', end='\r')
+            ##################################
 
+            coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, B, C, T)
+            coords = rotate_vector(coords_unr, Offset_theta)
+
+            # finds delta_thetas
+            delta_theta[:,k] = np.array([theta_a, theta_b, theta_c]) - delta_theta[:,k]
+
+        except:
+            print('Error: no solution geometries found.', end='\r')
+            
+    
     val += 1
 
 

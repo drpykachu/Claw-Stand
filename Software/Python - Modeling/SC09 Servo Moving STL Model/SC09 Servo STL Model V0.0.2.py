@@ -34,7 +34,7 @@ H_tar       = 160  # Height of target circle path
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
-minstep     = 0.293    # stepper motor step angle
+minstep     = 0.088*10    # stepper motor step angle
 speed       = 20   # Animation speed
 
 
