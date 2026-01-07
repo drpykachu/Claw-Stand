@@ -23,18 +23,21 @@ stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_S
 A = 40.7 # bottom digit + motor A height
 B = 57.7 # lower-middle digit + motor B height
 C = 57.7 # upper-middle middle 2 digit + motor B height
-T = 57.7 # top digit height
+T = 50 # top digit height
 
 num_fingers = 5
 Offset_R    = 60.575  # From origin (0,0,0)
 
-R_tar       = 100  # Radius of target circle path 
+# R_tar       = 100  # Radius of target circle path 
+# H_tar       = 190  # Height of target circle path
+
+R_tar       = 80  # Radius of target circle path 
 H_tar       = 200  # Height of target circle path
 
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
-minstep     = 300/4096*5    # stepper motor step angle
+minstep     = 360/4096*10    # stepper motor step angle
 speed       = 20   # Animation speed
 
 
@@ -81,7 +84,7 @@ joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
 rose_color = 'grey'
 tex_off = 10 # tet distance away from point
 LW = 3 # Line width
-PS = 1 # Point Size
+PS = 10 # Point Size
 
 vector_x = (1,0,0)
 vector_y = (0,1,0)
@@ -162,8 +165,8 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{0}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{0}'], (-0.75,0,0))        # Centers object
-    translate_object(motor_poly_dict[f'F{p}M{0}'], (-74.3071,0,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{0}'], (-58.123,0,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{0}'], (-0.5,0,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
     rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -Offset_theta_master[p]) # Sets the position correctly
 
@@ -174,9 +177,11 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (-45.5/2,-17.375,0))        # Centers object
-#     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-6.5))        # Lines up to motor center
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (-37.8/2,-47.65/2,0))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (0,0,72.7))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-4))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor C
@@ -186,9 +191,11 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (-25.0963/2,-45.5/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (-30.122/2,-47.65/2,0))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (0,0,72.7))        # Centers object    
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-6.5))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-4))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor T
@@ -198,9 +205,11 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25.0963/2,-45.5/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25/2,-47.65/2,0))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (0,0,55))        # Centers object
 #     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-6.5))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-4))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
     
 # === Animation ===
@@ -397,6 +406,7 @@ def animate():
     plotter.render()
     
     val += 1
+    
 
 timer = QTimer()
 timer.timeout.connect(animate)

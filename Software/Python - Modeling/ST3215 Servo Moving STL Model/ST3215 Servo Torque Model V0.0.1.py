@@ -14,41 +14,41 @@ from Claw_Functions import *  # Homebrew package
 
 # ================= Parameters =======================
 
+
 # Geometry (mm)
-A = 33.55
-B = 43.55
-C = 43.55
-T = 50
+A = 40.7 # bottom digit + motor A height
+B = 57.7 # lower-middle digit + motor B height
+C = 57.7 # upper-middle middle 2 digit + motor B height
+T = 50 # top digit height
 
 NUM_FINGERS = 5
-OFFSET_R = 75
+OFFSET_R = 60.575
 R_TARGET = 100
-H_TARGETS = [130, 140, 150, 160]
-H_TARGETS = [160, 150, 140, 130]
+H_TARGETS = [190]
 
 DELTA_Z = 20
 POINTS = 100
 
 # Masses (kg)
-WEIGHT_BEARING = 13 / 1000
-WEIGHT_MOTOR = 21 / 1000
+WEIGHT_BEARING = 0 / 1000
+WEIGHT_MOTOR = 70 / 1000
 BUFFER = 5 / 1000 # extra plastic, etc.
 
-HOLDER_MOTOR_B = 17 / 1000 + BUFFER
-HOLDER_MOTOR_C = 15 / 1000 + BUFFER
-HOLDER_MOTOR_T = 8 / 1000 + BUFFER
+HOLDER_MOTOR_B = 16 / 1000 + BUFFER
+HOLDER_MOTOR_C = 16 / 1000 + BUFFER
+HOLDER_MOTOR_T = 16 / 1000 + BUFFER
 
 # Motor / Spring
-MOTOR_TORQUE_KGCM = 1.3
+MOTOR_TORQUE_KGCM = 30
 MOTOR_TORQUE = MOTOR_TORQUE_KGCM * 98.0665 / 1000
 
-SPRING_K = 1.4 # from McMaster Carr
+SPRING_K = 0 # from McMaster Carr
 SPRING_K = (SPRING_K / 8.85075) / 270
 G = 9.8
 print(SPRING_K)
 # Load
-PLATE_LB = 0 /453.592
-PLATE_LB = 0.5
+PLATE_LB = 10 /453.592
+PLATE_LB = 10
 PLATE_KG = (PLATE_LB / 2.20462) / 4
 
 # ================= GUI ==============================
@@ -182,7 +182,7 @@ def update(idx):
         ax.text(0.05, 0.9, titles[i], transform=ax.transAxes, fontsize=9)
         ax.set_xlim(0, 180)
         ax.set_xticks(range(0,136,45))
-        ax.set_ylim(-200, 200)
+#         ax.set_ylim(-200, 200)
         ax.xaxis.set_minor_locator(AutoMinorLocator(3))
         ax.yaxis.set_minor_locator(AutoMinorLocator(2))
         ax.tick_params(axis='both',
