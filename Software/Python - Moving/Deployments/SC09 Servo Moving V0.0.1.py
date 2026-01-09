@@ -65,7 +65,7 @@ for MOTOR_ID in MOTOR_ID_LIST:
     move(CENTER,MOTOR_ID)
 
 for MOTOR_ID in MOTOR_ID_LIST:
-    set_speed(300, MOTOR_ID) # 100–600 recommended
+    set_speed(600, MOTOR_ID) # 100–600 recommended
 
 def angle360_to_pos(angle_deg):
     """
@@ -95,7 +95,7 @@ H_tar       = 160  # Height of target circle path
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
-minstep     = 1   # stepper motor step angle
+minstep     = 300/1023   # stepper motor step angle
 speed       = 20   # Animation speed
 
 
