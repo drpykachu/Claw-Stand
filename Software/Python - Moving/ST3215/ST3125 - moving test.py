@@ -8,36 +8,39 @@ from PyQt5.QtCore import QTimer
 from pyvistaqt import QtInteractor
 import matplotlib.colors as mcolors
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from st3215 import ST3215
+
+
 
 # ================= File Imports ===================
 from Claw_Functions import * # Home brew package
-stl_path_A = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.2\Python_STL\ST3215_Holder_Motor_A_Python.STL"
-stl_path_B = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.2\Python_STL\ST3215_Holder_Motor_B_Python.STL"
-stl_path_C = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.2\Python_STL\ST3215_Holder_Motor_C_Python.STL"
-stl_path_T = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.2\Python_STL\ST3215_Holder_Motor_T_Python.STL"
+stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_A_Python.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_B_Python.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_C_Python.STL"
+stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_T_Python.STL"
 
 # ================= Parameters ===================
 
-# Digit Lengths
+# Digit Lengthsw
 
 A = 40.7 # bottom digit + motor A height
-B = 35.06 # lower-middle digit + motor B height
+B = 57.7 # lower-middle digit + motor B height
 C = 57.7 # upper-middle middle 2 digit + motor B height
 T = 50 # top digit height
 
 num_fingers = 5
-Offset_R    = 80  # From origin (0,0,0)
+Offset_R    = 59.075  # From origin (0,0,0)
 
 # R_tar       = 100  # Radius of target circle path 
 # H_tar       = 190  # Height of target circle path
 
-R_tar       = 100  # Radius of target circle path 
-H_tar       = 170  # Height of target circle path
+R_tar       = 80  # Radius of target circle path 
+H_tar       = 200  # Height of target circle path
 
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
-minstep     = 360/4096*10    # stepper motor step angle
+minstep     = 360/4096    # stepper motor step angle
 speed       = 20   # Animation speed
 
 
@@ -49,7 +52,26 @@ master_path = np.ones((num_fingers,3,points))                         # Allocate
 path_load = int(points/num_fingers*(num_fingers-1))
 master_path_load = np.concatenate((np.ones((num_fingers,1,path_load)), np.zeros((num_fingers,1,points - path_load))), axis=2)# Allocates data for shifted finger path, load path
 
+############################## MOTOR SEEDING ##############################
 
+
+servo = ST3215('COM15')
+servo_list = [1,2,3,4,5,6]
+servo_here = []
+print('Available Servos:')
+for servo_ping in servo_list:
+    if servo.PingServo(servo_ping): 
+        servo_here.append(servo_ping)
+print(servo_here)
+
+#### Centers Motors ####
+center = 2048
+for motors in servo_here:
+    servo.MoveTo(motors, center, speed = 4000)
+
+###########################################################################
+    
+    
 ############# PATTERNS #############
 # # ROLLING PATTERN SHIFT
 # for i in range(num_fingers):
@@ -177,10 +199,10 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (-37.8/2,-61.525/2-5.5,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (-37.8/2,-42.65/2,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (0,0,60.122))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), 90) # Sets the position correctly
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (0,0,72.7))        # Centers object
+    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-4))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
@@ -191,11 +213,11 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (-30.122/2,-47.65/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (-30.122/2,-42.65/2,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{2}'], (0,0,72.7))        # Centers object    
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B+1.2))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-4))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 # Motor T
@@ -205,11 +227,11 @@ for p in range(num_fingers):
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25/2+3,-47.65/2,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25/2,-42.65/2,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{3}'], (0,0,55))        # Centers object
 #     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C+1.2))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-4))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
     
 # === Animation ===
@@ -301,7 +323,10 @@ def animate():
                 theta_c += step_change
                 step_counter[2] += np.rad2deg(step_change)/minstep
 
-
+            if k == 0:
+                move(angle360_to_pos(360-(np.rad2deg(theta_a)+90-17)),2)
+                move(angle360_to_pos(np.rad2deg(theta_b)+90),3)
+                move(angle360_to_pos(360-(np.rad2deg(theta_c) - np.rad2deg(theta_b)+90)-90),4)                
 
             coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, B, C, T)
             coords = rotate_vector(coords_unr, Offset_theta)
