@@ -48,7 +48,7 @@ G = 9.8
 print(SPRING_K)
 # Load
 PLATE_LB = 10 /453.592
-PLATE_LB = 10
+PLATE_LB = 45
 PLATE_KG = (PLATE_LB / 2.20462) / 4
 
 # ================= GUI ==============================

@@ -10,6 +10,7 @@ print('Available Servos:')
 for servo_ping in servo_list:
     if servo.PingServo(servo_ping): 
         servo_here.append(servo_ping)
+
 print(servo_here)
 
 #### Centers Motors ####
@@ -22,4 +23,9 @@ def ang2bit(angle_deg):
     pos = int(4096 * angle_deg / 360)
     return pos
 
-servo.MoveTo(4, ang2bit(270),speed = 1000)
+# servo.MoveTo(4, ang2bit(267),speed = 1000)
+
+# servo.DefineMiddle(4)
+
+# servo.WritePosition(4,90)
+servo.MoveTo(4, center,speed = 1000)

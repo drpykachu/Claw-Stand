@@ -122,12 +122,16 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     top_path[2] = np.ones(len(top_path[0]))*top_path[2]
     
     # building bottom path
-    bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))    
+    linearspace = np.linspace(0, 1, int(point_lower/2))
+    expospace = linearspace**0.5
+    expospace = np.concatenate((np.flip(expospace),-expospace))
+    bot_path_circ = circle(R_tar, H_tar, -360/num_fingers_p1/2*expospace)    
+    
     bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
     bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
      
-    total_path = np.concatenate((top_path, bot_path), axis=1)
-
+    total_path = np.concatenate((top_path, bot_path), axis=1)    
+    
     return total_path
 
 

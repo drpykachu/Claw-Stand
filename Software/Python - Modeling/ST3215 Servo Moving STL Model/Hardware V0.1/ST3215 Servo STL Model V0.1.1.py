@@ -37,7 +37,7 @@ H_tar       = 200  # Height of target circle path
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
-minstep     = 360/4096*10    # stepper motor step angle
+minstep     = 360/4096*4    # stepper motor step angle
 speed       = 20   # Animation speed
 
 
@@ -156,7 +156,7 @@ for p in range(num_fingers):
 ### STL (testing)
 motor_poly_dict = {}
 motor_actor_dict = {}
-opacity_stl = 1
+opacity_stl = 0.1
 opacity_color = "lightgray"
 
 # Motor A

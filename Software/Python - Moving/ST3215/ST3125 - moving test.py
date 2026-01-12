@@ -1,4 +1,5 @@
 import sys
+import time
 import trimesh
 import pyautogui  
 import numpy as np
@@ -13,7 +14,7 @@ from st3215 import ST3215
 
 
 # ================= File Imports ===================
-from Claw_Functions import * # Home brew package
+from Claw_Functions_ST3215 import * # Home brew package
 stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_A_Python.STL"
 stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_B_Python.STL"
 stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_C_Python.STL"
@@ -34,14 +35,15 @@ Offset_R    = 59.075  # From origin (0,0,0)
 # R_tar       = 100  # Radius of target circle path 
 # H_tar       = 190  # Height of target circle path
 
-R_tar       = 80  # Radius of target circle path 
-H_tar       = 200  # Height of target circle path
+R_tar       = 100  # Radius of target circle path 
+H_tar       = 180  # Height of target circle path
 
-delta_Z     = 20   # Dropping from path for reset 
-points      = 100  # Number of points for path
+delta_Z     = 10   # Dropping from path for reset 
+points      = 300  # Number of points for path
 
 minstep     = 360/4096    # stepper motor step angle
-speed       = 20   # Animation speed
+minstep     = 0.0001    # stepper motor step angle
+speed       = 50   # Animation speed
 
 
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -54,6 +56,9 @@ master_path_load = np.concatenate((np.ones((num_fingers,1,path_load)), np.zeros(
 
 ############################## MOTOR SEEDING ##############################
 
+def ang2bit(angle_deg):
+    pos = int(4096 * angle_deg / 360)
+    return pos
 
 servo = ST3215('COM15')
 servo_list = [1,2,3,4,5,6]
@@ -68,6 +73,10 @@ print(servo_here)
 center = 2048
 for motors in servo_here:
     servo.MoveTo(motors, center, speed = 4000)
+
+motor_speed = 4096
+for motors in servo_here:
+    servo.SetSpeed(motors, motor_speed)
 
 ###########################################################################
     
@@ -167,7 +176,7 @@ for p in range(num_fingers):
             
 lines_poly_dict = {}
 lines_actor_dict = {}
-for p in range(num_fingers):
+for p in range(1):
     lines_poly_dict[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
     lines_actor_dict[f'F{p}'] = plotter.add_mesh(lines_poly_dict[f'F{p}'], color='black', line_width=LW)
 
@@ -182,7 +191,7 @@ opacity_stl = 1
 opacity_color = "lightgray"
 
 # Motor A
-for p in range(num_fingers):
+for p in range(1):
     mesh = trimesh.load_mesh(stl_path_A)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -194,7 +203,7 @@ for p in range(num_fingers):
 
 # Motor B
 
-for p in range(num_fingers):
+for p in range(1):
     mesh = trimesh.load_mesh(stl_path_B)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -208,7 +217,7 @@ for p in range(num_fingers):
 
 # Motor C
 
-for p in range(num_fingers):
+for p in range(1):
     mesh = trimesh.load_mesh(stl_path_C)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -222,7 +231,7 @@ for p in range(num_fingers):
 
 # Motor T
 
-for p in range(num_fingers):
+for p in range(1):
     mesh = trimesh.load_mesh(stl_path_T)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -283,11 +292,11 @@ def animate():
 
     if val == points:
         val = 0
-#         print(step_counter)
-
+#     if val > points - 41:
+#         input()
         
-    for k in range(num_fingers):
-        try:
+    for k in range(1):
+
             ### Finding angles and rebuilding fingers
             Xtar, Ytar, Ztar = master_path[k, :, int(val)] 
             Offset_theta = Offset_theta_master[k]
@@ -298,36 +307,43 @@ def animate():
             
             # checks for a change in angle based on the stepper motor step. makes it go from indefinite to a real world
             if theta_a == 361.0:
-                    theta_a = theta_reals[0]
-                    theta_b = theta_reals[1]
-                    theta_c = theta_reals[2]
+                theta_a = theta_reals[0]
+                theta_b = theta_reals[1]
+                theta_c = theta_reals[2]
             
-            err = theta_reals[0] - theta_a
-            if abs(np.rad2deg(err)) > minstep:
-                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
-                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
-                theta_a += step_change
-                step_counter[0] += np.rad2deg(step_change)/minstep
-
-            err = theta_reals[1] - theta_b
-            if abs(np.rad2deg(err)) > minstep:
-                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
-                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
-                theta_b += step_change
-                step_counter[1] += np.rad2deg(step_change)/minstep
-
-            err = theta_reals[2] - theta_c
-            if abs(np.rad2deg(err)) > minstep:
-                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
-                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
-                theta_c += step_change
-                step_counter[2] += np.rad2deg(step_change)/minstep
+            
+            theta_a = theta_reals[0]
+            theta_b = theta_reals[1]
+            theta_c = theta_reals[2]
+            
+#             err = theta_reals[0] - theta_a
+#             if abs(np.rad2deg(err)) > minstep:
+#                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+#                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+#                 theta_a += step_change
+#                 step_counter[0] += np.rad2deg(step_change)/minstep
+# 
+#             err = theta_reals[1] - theta_b
+#             if abs(np.rad2deg(err)) > minstep:
+#                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+#                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+#                 theta_b += step_change
+#                 step_counter[1] += np.rad2deg(step_change)/minstep
+# 
+#             err = theta_reals[2] - theta_c
+#             if abs(np.rad2deg(err)) > minstep:
+#                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+#                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+#                 theta_c += step_change
+#                 step_counter[2] += np.rad2deg(step_change)/minstep
 
             if k == 0:
-                move(angle360_to_pos(360-(np.rad2deg(theta_a)+90-17)),2)
-                move(angle360_to_pos(np.rad2deg(theta_b)+90),3)
-                move(angle360_to_pos(360-(np.rad2deg(theta_c) - np.rad2deg(theta_b)+90)-90),4)                
+                servo.MoveTo(4, ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
+                servo.MoveTo(3, ang2bit(np.rad2deg(theta_b)+90))
+                servo.MoveTo(2, ang2bit(360-(np.rad2deg(theta_a)+90)))
 
+#                 print(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b)))
+                
             coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, B, C, T)
             coords = rotate_vector(coords_unr, Offset_theta)
 
@@ -425,9 +441,7 @@ def animate():
             
             delta_theta[:,k] = np.array([theta_a, theta_b, theta_c])
 
-        except:
-            print('Error: no solution geometries found.', end='\r')
-            
+
     plotter.render()
     
     val += 1
