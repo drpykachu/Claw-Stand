@@ -1,5 +1,4 @@
 import sys
-import time
 import trimesh
 import pyautogui  
 import numpy as np
@@ -9,20 +8,21 @@ from PyQt5.QtCore import QTimer
 from pyvistaqt import QtInteractor
 import matplotlib.colors as mcolors
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from st3215 import ST3215
-
-
 
 # ================= File Imports ===================
-from Claw_Functions_ST3215 import * # Home brew package
-stl_path_A = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_A_Python.STL"
-stl_path_B = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_B_Python.STL"
-stl_path_C = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_C_Python.STL"
-stl_path_T = r"..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_T_Python.STL"
+from Claw_Functions import * # Home brew package
+stl_path_A = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_A_Python.STL"
+stl_path_B = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_B_Python.STL"
+stl_path_C = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_C_Python.STL"
+stl_path_T = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_T_Python.STL"
+
+stl_path_Plate1 = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Items_STL\Plate_1.STL"
+stl_path_Plate2 = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Items_STL\Plate_2.STL"
+stl_path_Baseball = r"..\..\..\..\Hardware\3D Models\Solidworks Servo\ST3215\V0.1\Items_STL\Baseball.STL"
 
 # ================= Parameters ===================
 
-# Digit Lengthsw
+# Digit Lengths
 A = 40.7 # bottom digit + motor A height
 B = 57.7 # lower-middle digit + motor B height
 C = 57.7 # upper-middle middle 2 digit + motor B height
@@ -32,7 +32,7 @@ num_fingers = 5
 Offset_R    = 59.075  # From origin (0,0,0)
 
 R_tar       = 80  # Radius of target circle path 
-H_tar       = 180  # Height of target circle path
+H_tar       = 200  # Height of target circle path
 
 delta_Z     = 10   # Dropping from path for reset 
 points      = 300  # Number of points for path
@@ -50,59 +50,31 @@ master_path = np.ones((num_fingers,3,points))                         # Allocate
 path_load = int(points/num_fingers*(num_fingers-1))
 master_path_load = np.concatenate((np.ones((num_fingers,1,path_load)), np.zeros((num_fingers,1,points - path_load))), axis=2)# Allocates data for shifted finger path, load path
 
-############################## MOTOR SEEDING ##############################
 
-def ang2bit(angle_deg):
-    pos = int(4096 * angle_deg / 360)
-    return pos
-
-servo = ST3215('COM15')
-servo_list = [1,2,3,4,5,6]
-servo_here = []
-print('Available Servos:')
-for servo_ping in servo_list:
-    if servo.PingServo(servo_ping): 
-        servo_here.append(servo_ping)
-print(servo_here)
-
-#### Centers Motors ####
-center = 2048
-for motors in servo_here:
-    servo.MoveTo(motors, center, speed = 4000)
-
-motor_speed = 4096
-for motors in servo_here:
-    servo.SetSpeed(motors, motor_speed)
-
-###########################################################################
-    
-    
 ############# PATTERNS #############
-# # ROLLING PATTERN SHIFT
-# for i in range(num_fingers):
-#     """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
-#     shifter = int(points / (num_fingers) * i)
-#     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
-#     master_path[i] = shifted
-
-
-
-# STAR PATTERN SHIFT (e.g. 1→3→5→2→4 for 5 fingers)
-# Uses modular stepping to assign shifts in a star order instead of sequential order
-
-step = 2                      # star step (works for odd num_fingers)
-spacing = int(points / num_fingers)
-
-order = []
-current = 0
-while current not in order:
-    order.append(current)
-    current = (current + step) % num_fingers
-
-for shift_idx, finger_idx in enumerate(order):
-    shifter = spacing * shift_idx
+# ROLLING PATTERN SHIFT
+for i in range(num_fingers):
+    """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+    shifter = int(points / (num_fingers) * i)
     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
-    master_path[finger_idx] = shifted
+    master_path[i] = shifted
+
+
+
+# # STAR PATTERN SHIFT (e.g. 1→3→5→2→4 for 5 fingers)
+# step = 2                      # star step (works for odd num_fingers)
+# spacing = int(points / num_fingers)
+# 
+# order = []
+# current = 0
+# while current not in order:
+#     order.append(current)
+#     current = (current + step) % num_fingers
+# 
+# for shift_idx, finger_idx in enumerate(order):
+#     shifter = spacing * shift_idx
+#     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+#     master_path[finger_idx] = shifted
 ######################################
 
 # Plot Settings
@@ -172,7 +144,7 @@ for p in range(num_fingers):
             
 lines_poly_dict = {}
 lines_actor_dict = {}
-for p in range(1):
+for p in range(num_fingers):
     lines_poly_dict[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
     lines_actor_dict[f'F{p}'] = plotter.add_mesh(lines_poly_dict[f'F{p}'], color='black', line_width=LW)
 
@@ -185,9 +157,10 @@ motor_poly_dict = {}
 motor_actor_dict = {}
 opacity_stl = 1
 opacity_color = "lightgray"
+opacity_item = 1
 
 # Motor A
-for p in range(1):
+for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_A)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -199,7 +172,7 @@ for p in range(1):
 
 # Motor B
 
-for p in range(1):
+for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_B)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -213,7 +186,7 @@ for p in range(1):
 
 # Motor C
 
-for p in range(1):
+for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_C)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -227,7 +200,7 @@ for p in range(1):
 
 # Motor T
 
-for p in range(1):
+for p in range(num_fingers):
     mesh = trimesh.load_mesh(stl_path_T)
     pointers, faces = mesh.vertices, mesh.faces
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
@@ -238,7 +211,31 @@ for p in range(1):
 #     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
     translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-4))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+
+####### Items
+if True:
+    # Plate
+    plate_D = 100
+    mesh = trimesh.load_mesh(stl_path_Plate1)
+    pointers, faces = mesh.vertices, mesh.faces
+    motor_poly_dict[f'Plate1'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(motor_poly_dict[f'Plate1'], color=opacity_color, opacity=opacity_item)
+    translate_object(motor_poly_dict[f'Plate1'], (-plate_D,-plate_D,H_tar))        # Centers object
+    mesh = trimesh.load_mesh(stl_path_Plate2)
+    pointers, faces = mesh.vertices, mesh.faces
+    motor_poly_dict[f'Plate2'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(motor_poly_dict[f'Plate2'], color='k', opacity=opacity_item)
+    translate_object(motor_poly_dict[f'Plate2'], (-plate_D,-plate_D*2**0.5/2,H_tar))        # Centers object
+
+    # Baseball
+    mesh = trimesh.load_mesh(stl_path_Baseball)
+    pointers, faces = mesh.vertices, mesh.faces
+    motor_poly_dict[f'Baseball'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(motor_poly_dict[f'Baseball'], color='tab:orange', opacity=opacity_item)
+    translate_object(motor_poly_dict[f'Baseball'], (0,0, 37.5 + 5 +H_tar))        # Centers object
     
+
+
 # === Animation ===
 delta_theta = np.zeros((3, num_fingers))
 
@@ -288,11 +285,14 @@ def animate():
 
     if val == points:
         val = 0
-#     if val > points - 41:
-#         input()
-        
-    for k in range(1):
+#         print(step_counter)
+    
+    rotate_around_line(motor_poly_dict[f'Plate1'], (0,0,0), vector_z,360/(points*num_fingers) ) # Sets the position correctly
+    rotate_around_line(motor_poly_dict[f'Plate2'], (0,0,0), vector_z,360/(points*num_fingers) ) # Sets the position correctly
+    rotate_around_line(motor_poly_dict[f'Baseball'], (0,0,0), vector_z,360/(points*num_fingers) ) # Sets the position correctly
 
+    for k in range(num_fingers):
+        try:
             ### Finding angles and rebuilding fingers
             Xtar, Ytar, Ztar = master_path[k, :, int(val)] 
             Offset_theta = Offset_theta_master[k]
@@ -303,43 +303,33 @@ def animate():
             
             # checks for a change in angle based on the stepper motor step. makes it go from indefinite to a real world
             if theta_a == 361.0:
-                theta_a = theta_reals[0]
-                theta_b = theta_reals[1]
-                theta_c = theta_reals[2]
+                    theta_a = theta_reals[0]
+                    theta_b = theta_reals[1]
+                    theta_c = theta_reals[2]
             
-            
-            theta_a = theta_reals[0]
-            theta_b = theta_reals[1]
-            theta_c = theta_reals[2]
-            
-#             err = theta_reals[0] - theta_a
-#             if abs(np.rad2deg(err)) > minstep:
-#                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
-#                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
-#                 theta_a += step_change
-#                 step_counter[0] += np.rad2deg(step_change)/minstep
-# 
-#             err = theta_reals[1] - theta_b
-#             if abs(np.rad2deg(err)) > minstep:
-#                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
-#                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
-#                 theta_b += step_change
-#                 step_counter[1] += np.rad2deg(step_change)/minstep
-# 
-#             err = theta_reals[2] - theta_c
-#             if abs(np.rad2deg(err)) > minstep:
-#                 nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
-#                 step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
-#                 theta_c += step_change
-#                 step_counter[2] += np.rad2deg(step_change)/minstep
+            err = theta_reals[0] - theta_a
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_a += step_change
+                step_counter[0] += np.rad2deg(step_change)/minstep
 
-            if k == 0:
-                servo.MoveTo(4, ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
-                servo.MoveTo(3, ang2bit(np.rad2deg(theta_b)+90))
-                servo.MoveTo(2, ang2bit(360-(np.rad2deg(theta_a)+90)))
+            err = theta_reals[1] - theta_b
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_b += step_change
+                step_counter[1] += np.rad2deg(step_change)/minstep
 
-#                 print(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b)))
-                
+            err = theta_reals[2] - theta_c
+            if abs(np.rad2deg(err)) > minstep:
+                nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+                step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+                theta_c += step_change
+                step_counter[2] += np.rad2deg(step_change)/minstep
+
+
+
             coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, B, C, T)
             coords = rotate_vector(coords_unr, Offset_theta)
 
@@ -437,7 +427,9 @@ def animate():
             
             delta_theta[:,k] = np.array([theta_a, theta_b, theta_c])
 
-
+        except:
+            print('Error: no solution geometries found.', end='\r')
+            
     plotter.render()
     
     val += 1
