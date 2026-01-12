@@ -30,9 +30,10 @@ T = 50 # top digit height
 
 num_fingers = 5
 Offset_R    = 59.075  # From origin (0,0,0)
+Offset_R    = 85  # From origin (0,0,0)
 
-R_tar       = 80  # Radius of target circle path 
-H_tar       = 200  # Height of target circle path
+R_tar       = 100  # Radius of target circle path 
+H_tar       = 190  # Height of target circle path
 
 delta_Z     = 10   # Dropping from path for reset 
 points      = 300  # Number of points for path
@@ -285,11 +286,10 @@ def animate():
 
     if val == points:
         val = 0
-#         print(step_counter)
-    
-    rotate_around_line(motor_poly_dict[f'Plate1'], (0,0,0), vector_z,360/(points*num_fingers) ) # Sets the position correctly
-    rotate_around_line(motor_poly_dict[f'Plate2'], (0,0,0), vector_z,360/(points*num_fingers) ) # Sets the position correctly
-    rotate_around_line(motor_poly_dict[f'Baseball'], (0,0,0), vector_z,360/(points*num_fingers) ) # Sets the position correctly
+
+    rotate_around_line(motor_poly_dict[f'Plate1'], (0,0,0), vector_z,360/(points*(num_fingers+1) )) # Sets the position correctly
+    rotate_around_line(motor_poly_dict[f'Plate2'], (0,0,0), vector_z,360/(points*(num_fingers+1) )) # Sets the position correctly
+    rotate_around_line(motor_poly_dict[f'Baseball'], (0,0,0), vector_z,360/(points*(num_fingers+1) )) # Sets the position correctly
 
     for k in range(num_fingers):
         try:

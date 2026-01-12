@@ -29,17 +29,20 @@ C = 57.7 # upper-middle middle 2 digit + motor B height
 T = 50 # top digit height
 
 num_fingers = 5
-Offset_R    = 59.075  # From origin (0,0,0)
 
-R_tar       = 80  # Radius of target circle path 
-H_tar       = 180  # Height of target circle path
+Offset_R    = 59.075  # From origin (0,0,0)
+Offset_R    = 85  # From origin (0,0,0)
+
+R_tar       = 100  # Radius of target circle path 
+H_tar       = 190  # Height of target circle path
+
 
 delta_Z     = 10   # Dropping from path for reset 
 points      = 300  # Number of points for path
 
 minstep     = 360/4096    # stepper motor step angle
 minstep     = 0.0001    # stepper motor step angle
-speed       = 50   # Animation speed
+speed       = 25   # Animation speed
 
 # ================= Pathing ===================
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
