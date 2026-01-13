@@ -12,19 +12,20 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from st3215 import ST3215
 from Claw_Functions_ST3215 import * # Home brew package
 # ================= File Imports ===================
+version = 'V0.2'
+stl_path_A = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_A.STL"
+stl_path_B = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_B.STL"
+stl_path_C = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_C.STL"
+stl_path_T = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_T.STL"
 
-stl_path_A = r"..\..\Hardware\3D Models\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_A_Python.STL"
-stl_path_B = r"..\..\Hardware\3D Models\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_B_Python.STL"
-stl_path_C = r"..\..\Hardware\3D Models\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_C_Python.STL"
-stl_path_T = r"..\..\Hardware\3D Models\ST3215\V0.1\Python_STL\ST3215_Holder_Motor_T_Python.STL"
-
-stl_path_Plate1 = r"..\..\Hardware\3D Models\ST3215\V0.1\Items_STL\Plate_1.STL"
-stl_path_Plate2 = r"..\..\Hardware\3D Models\ST3215\V0.1\Items_STL\Plate_2.STL"
-stl_path_Baseball = r"..\..\Hardware\3D Models\ST3215\V0.1\Items_STL\Baseball.STL"
+stl_path_Plate1 = r"..\..\Hardware\3D Models\Items\Plate_1.STL"
+stl_path_Plate2 = r"..\..\Hardware\3D Models\Items\Plate_2.STL"
+stl_path_Baseball = r"..\..\Hardware\3D Models\Items\Baseball.STL"
+items_on = 1
 
 # ================= Parameters ===================
 
-# Digit Lengthsw
+# Digit Lengths
 A = 40.7 # bottom digit + motor A height
 B = 57.7 # lower-middle digit + motor B height
 C = 57.7 # upper-middle middle 2 digit + motor B height
@@ -114,12 +115,6 @@ for i in range(num_fingers):
 ######################################
 
 # Plot Settings
-path_colors = ['tab:green','red','tab:orange','cyan','magenta']
-joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
-rose_color = 'grey'
-tex_off = 10 # tet distance away from point
-LW = 3 # Line width
-PS = 10 # Point Size
 
 vector_x = (1,0,0)
 vector_y = (0,1,0)
@@ -133,29 +128,25 @@ main_window.setWindowTitle("Claw Animation")
 
 plotter = QtInteractor(main_window)
 main_window.setCentralWidget(plotter)
-# viewing angle (all commented = trimetric)
-# plotter.view_zx()  
-# plotter.view_yx()
-# plotter.view_yz()  
 
 # === Stagnant Plots ===
 
 # Plotting target Circle
 circ_tar_points = np.column_stack((circle_tar[0], circle_tar[1], circle_tar[2]*np.ones(len(circle_tar[1]))))
-plotter.add_lines(circ_tar_points, width=LW, color='black')
+plotter.add_lines(circ_tar_points, width=3, color='black')
 
 # Plotting Base Circle
 base_circle = circle(Offset_R, 0, np.linspace(0,359,100))
 base_circle_points = np.column_stack((base_circle[0], base_circle[1], base_circle[2]*np.ones(len(base_circle[1]))))
-plotter.add_lines(base_circle_points, width=LW, color='blue')
+plotter.add_lines(base_circle_points, width=3, color='blue')
 
 # Directional rose
 limits = H_tar
 lims = np.array(range(-limits, limits))
-rose_points = np.column_stack((lims, lims*0, lims*0)); plotter.add_lines(rose_points, width=LW, color=rose_color) # X
-rose_points = np.column_stack((lims*0, lims, lims*0)); plotter.add_lines(rose_points, width=LW, color=rose_color) # Y
+rose_points = np.column_stack((lims, lims*0, lims*0)); plotter.add_lines(rose_points, width=3, color='grey') # X
+rose_points = np.column_stack((lims*0, lims, lims*0)); plotter.add_lines(rose_points, width=3, color='grey') # Y
 lims = np.array(range(0, limits))
-rose_points = np.column_stack((lims*0, lims*0, lims)); plotter.add_lines(rose_points, width=LW, color=rose_color) # Z
+rose_points = np.column_stack((lims*0, lims*0, lims)); plotter.add_lines(rose_points, width=3, color='grey') # Z
 plotter.show_bounds(location='back',
                     axes_ranges=[-limits, limits, -limits, limits, -limits/10, limits],
                     font_size=7,
@@ -165,87 +156,73 @@ plotter.show_bounds(location='back',
 
 # === Moving points ===
 
-# Points
+points_poly_dict = {}
+points_actor_dict = {}            
 points_poly_dict = {}
 points_actor_dict = {}
-for p in range(num_fingers):
-    for j in range(5):
-        points_poly_dict[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
-        if j != 4:
-            points_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(points_poly_dict[f'F{p}J{j}'], color=joint_colors[j], point_size=PS, render_points_as_spheres=True)
-        else:
-            points_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(points_poly_dict[f'F{p}J{j}'], color=path_colors[p], point_size=PS, render_points_as_spheres=True)
-            
-# Lines - Fingers and Paths lines_poly_dict[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
-            
 lines_poly_dict = {}
 lines_actor_dict = {}
-for p in range(num_fingers):
-    lines_poly_dict[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
-    lines_actor_dict[f'F{p}'] = plotter.add_mesh(lines_poly_dict[f'F{p}'], color='black', line_width=LW)
-
-    lines_poly_dict[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
-    lines_actor_dict[f'P{p}'] = plotter.add_mesh(lines_poly_dict[f'P{p}'], color=path_colors[p], line_width=LW)
-
-
-### STL (testing)
 motor_poly_dict = {}
 motor_actor_dict = {}
 opacity_stl = 1
 opacity_color = "lightgray"
-opacity_item = 1
+opacity_item = items_on
+path_colors = ['tab:green','red','tab:orange','cyan','magenta']
+joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
 
-# Motor A
+
 for p in range(num_fingers):
-    mesh = trimesh.load_mesh(stl_path_A)
-    pointers, faces = mesh.vertices, mesh.faces
+
+    for j in range(5):
+        points_poly_dict[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
+        if j != 4:
+            points_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(points_poly_dict[f'F{p}J{j}'], color=joint_colors[j], point_size=10, render_points_as_spheres=True)
+        else:
+            points_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(points_poly_dict[f'F{p}J{j}'], color=path_colors[p], point_size=10, render_points_as_spheres=True)
+
+    # Lines - Fingers and Paths 
+    lines_poly_dict[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
+    lines_actor_dict[f'F{p}'] = plotter.add_mesh(lines_poly_dict[f'F{p}'], color='black', line_width=3)
+    lines_poly_dict[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
+    lines_actor_dict[f'P{p}'] = plotter.add_mesh(lines_poly_dict[f'P{p}'], color=path_colors[p], line_width=3)
+
+    # Motor A
+    mesh = trimesh.load_mesh(stl_path_A) 
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     motor_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{0}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{0}'], (-43.593,0,0))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{0}'], (-extents[0]/2,0,0))        # Centers object
     translate_object(motor_poly_dict[f'F{p}M{0}'], (-0.5,0,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
+    rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -90) # Sets the position correctly
     rotate_around_line(motor_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -Offset_theta_master[p]) # Sets the position correctly
 
-# Motor B
-
-for p in range(num_fingers):
+    # Motor B
     mesh = trimesh.load_mesh(stl_path_B)
-    pointers, faces = mesh.vertices, mesh.faces
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     motor_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (-37.8/2,-42.65/2,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (0,0,72.7))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-4))        # Lines up to motor center
+    translate_object(motor_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-10))        # Lines up to motor center
     rotate_around_line(motor_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
-# Motor C
-
-for p in range(num_fingers):
+    # Motor C
     mesh = trimesh.load_mesh(stl_path_C)
-    pointers, faces = mesh.vertices, mesh.faces
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     motor_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (-30.122/2,-42.65/2,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (0,0,72.7))        # Centers object    
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-4))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-10))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
-# Motor T
-
-for p in range(num_fingers):
+    # Motor T
     mesh = trimesh.load_mesh(stl_path_T)
-    pointers, faces = mesh.vertices, mesh.faces
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     motor_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(motor_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (-25/2,-42.65/2,0))        # Centers object
-    rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (1,0,0), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (0,0,55))        # Centers object
-#     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-4))        # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (-extents[0]/2,-extents[1]/2,0))      # Centers object
+    translate_object(motor_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-10))        # Centers object
     rotate_around_line(motor_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 ####### Items
@@ -306,6 +283,7 @@ for i in range(points):
         minmax_c[i] = theta_c
     except:
         print('WARNING - not all points in path have a solution.')
+        break
 
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
 theta_a = 361.0
