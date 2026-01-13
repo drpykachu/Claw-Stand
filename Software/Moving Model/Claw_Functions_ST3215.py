@@ -11,6 +11,34 @@ import pyautogui  # to automatically detect screen size
 
 # ================= Functions ===================
 
+def patterns(kind, num_fingers,points,fingertip_path):
+    master_path = np.ones((num_fingers,3,points))
+    if kind == 'Roll':
+        # ROLLING PATTERN SHIFT - goes from tip to tip
+        for i in range(num_fingers):
+            """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+            shifter = int(points / (num_fingers) * i)
+            shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+            master_path[i] = shifted
+            
+            
+    if kind == 'Star':
+        # STAR PATTERN SHIFT (e.g. 1→3→5→2→4 for 5 fingers)
+        step = 2                      # star step (works for odd num_fingers)
+        spacing = int(points / num_fingers)
+        order = []
+        current = 0
+        while current not in order:
+            order.append(current)
+            current = (current + step) % num_fingers
+
+        for shift_idx, finger_idx in enumerate(order):
+            shifter = spacing * shift_idx
+            shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+            master_path[finger_idx] = shifted
+            
+    return master_path
+
 def ang2bit(angle_deg):
     pos = int(4096 * angle_deg / 360)
     return pos
@@ -108,7 +136,7 @@ def circle(r, h, degree):
 def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     """Builds the path for the fingertip travel."""
     exponent = 4
-    num_fingers_p1 = num_fingers+1
+    num_fingers_p1 = num_fingers + 1
     
     class PointCount(Exception):
         """Checks if the amount of points is even."""
