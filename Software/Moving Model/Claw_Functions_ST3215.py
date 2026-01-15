@@ -1,7 +1,9 @@
 import sys
+import vtk
 import pyvista as pv
 from pyvistaqt import QtInteractor
 import trimesh
+import itertools
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QTimer
@@ -10,6 +12,57 @@ import matplotlib.pyplot as plt
 import pyautogui  # to automatically detect screen size
 
 # ================= Functions ===================
+
+def bounds_overlap(mesh1, mesh2):
+    b1 = mesh1.bounds
+    b2 = mesh2.bounds
+
+    return (
+        b1[1] >= b2[0] and b2[1] >= b1[0] and
+        b1[3] >= b2[2] and b2[3] >= b1[2] and
+        b1[5] >= b2[4] and b2[5] >= b1[4]
+    )
+
+
+def meshes_intersect(mesh1, mesh2, tol=0.0):
+    collision = vtk.vtkCollisionDetectionFilter()
+    collision.SetInputData(0, mesh1)
+    collision.SetInputData(1, mesh2)
+
+    t1 = vtk.vtkTransform()
+    t1.Identity()
+    t2 = vtk.vtkTransform()
+    t2.Identity()
+
+    collision.SetTransform(0, t1)
+    collision.SetTransform(1, t2)
+
+    collision.SetCollisionModeToAllContacts()
+    collision.SetBoxTolerance(tol)
+    collision.SetCellTolerance(tol)
+
+    collision.Update()
+
+    return collision.GetNumberOfContacts() > 0
+
+
+def check_no_intersections(pyvista_poly_dict):
+    keys = list(pyvista_poly_dict.keys())
+
+    for k1, k2 in itertools.combinations(keys, 2):
+        m1 = pyvista_poly_dict[k1]
+        m2 = pyvista_poly_dict[k2]
+
+        # Fast reject
+        if not bounds_overlap(m1, m2):
+            continue
+
+        # Accurate test
+        if meshes_intersect(m1, m2):
+            return False, (k1, k2)
+
+    return True, None
+
 
 def patterns(kind, num_fingers,points,fingertip_path):
     master_path = np.ones((num_fingers,3,points))

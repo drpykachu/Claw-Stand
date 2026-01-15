@@ -1,6 +1,8 @@
 import sys
+import vtk
 import time
 import trimesh
+import itertools
 import pyautogui  
 import numpy as np
 import pyvista as pv
@@ -20,7 +22,7 @@ stl_path_T = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST32
 stl_path_Plate1 = r"..\..\Hardware\3D Models\Items\Plate_1.STL"
 stl_path_Plate2 = r"..\..\Hardware\3D Models\Items\Plate_2.STL"
 stl_path_Baseball = r"..\..\Hardware\3D Models\Items\Baseball.STL"
-items_on = True
+items_on = False
 # ======================================================= Parameters =========================================================
 
 # Digit Lengths
@@ -122,7 +124,11 @@ plotter.show_bounds(location='back',
 
 # === Moving points ===
 pyvista_poly_dict = {}
-pyvista_actor_dict = {}            
+pyvista_actor_dict = {}
+
+pyvista_poly_dict_BAS = {}
+pyvista_actor_dict_BAS = {}
+
 opacity_stl = 1
 opacity_color = "lightgray"
 opacity_item = items_on
@@ -132,17 +138,17 @@ joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
 
 for p in range(num_fingers):
     for j in range(5):
-        pyvista_poly_dict[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
+        pyvista_poly_dict_BAS[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
         if j != 4:
-            pyvista_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(pyvista_poly_dict[f'F{p}J{j}'], color=joint_colors[j], point_size=10, render_points_as_spheres=True)
+            pyvista_actor_dict_BAS[f'F{p}J{j}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}J{j}'], color=joint_colors[j], point_size=10, render_points_as_spheres=True)
         else:
-            pyvista_actor_dict[f'F{p}J{j}'] = plotter.add_mesh(pyvista_poly_dict[f'F{p}J{j}'], color=path_colors[p], point_size=10, render_points_as_spheres=True)
+            pyvista_actor_dict_BAS[f'F{p}J{j}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}J{j}'], color=path_colors[p], point_size=10, render_points_as_spheres=True)
 
     # Lines - Fingers and Paths 
-    pyvista_poly_dict[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
-    pyvista_actor_dict[f'F{p}'] = plotter.add_mesh(pyvista_poly_dict[f'F{p}'], color='black', line_width=3)
-    pyvista_poly_dict[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
-    pyvista_actor_dict[f'P{p}'] = plotter.add_mesh(pyvista_poly_dict[f'P{p}'], color=path_colors[p], line_width=3)
+    pyvista_poly_dict_BAS[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
+    pyvista_actor_dict_BAS[f'F{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}'], color='black', line_width=3)
+    pyvista_poly_dict_BAS[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
+    pyvista_actor_dict_BAS[f'P{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'P{p}'], color=path_colors[p], line_width=3)
 
     # Motor A
     mesh = trimesh.load_mesh(stl_path_A) 
@@ -205,10 +211,9 @@ if items_on:
     plotter.add_mesh(pyvista_poly_dict[f'Baseball'], color='tab:orange', opacity=opacity_item)
     translate_object(pyvista_poly_dict[f'Baseball'], (0,0, 37.5 + 5 +H_tar))        # Centers object
     
-
 # ============================================================ Animation ============================================================
-delta_theta = np.zeros((3, num_fingers))
 
+delta_theta = np.zeros((3, num_fingers))
 
 primerB = np.zeros((num_fingers))
 primerC = np.zeros((num_fingers))
@@ -238,6 +243,17 @@ camera_distance(plotter, distance = 1000)
 
 val_anim = 0
 val_motor = 0
+# ============================================================ Collision ============================================================
+pyvista_poly_dict_collision = {}
+for p in range(num_fingers):
+    pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
+    
+
+
+
+
+
+
 def animate():
     global val_anim, val_motor
 
@@ -251,6 +267,13 @@ def animate():
         rotate_around_line(pyvista_poly_dict[f'Plate1'], (0,0,0), vector_z,360/(points*(num_fingers+1) )) # Sets the position correctly
         rotate_around_line(pyvista_poly_dict[f'Plate2'], (0,0,0), vector_z,360/(points*(num_fingers+1) )) # Sets the position correctly
         rotate_around_line(pyvista_poly_dict[f'Baseball'], (0,0,0), vector_z,360/(points*(num_fingers+1) )) # Sets the position correctly
+
+
+    ok, collision = check_no_intersections(pyvista_poly_dict_collision)
+    if not ok:
+        print(f"\033[91mWARNING: Collision between {collision[0]} and {collision[1]}\033[0m\r", end="\r", flush=True)
+    else:
+        print(f"                                                                                                                        \r", end="\r", flush=True)
         
     for k in range(num_fingers):
 
@@ -270,12 +293,12 @@ def animate():
         
        ############ Ball and Stick Actors ############
         for j in range(5):        
-            pyvista_poly_dict[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
+            pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
         
-        pyvista_poly_dict[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
+        pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
             
         master_path_plot = rotate_vector(master_path[k], Offset_theta)
-        pyvista_poly_dict[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
+        pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
          
         ############ Rotates Motor B Segment ############
         # Casts it back to center for easier rotational math
@@ -371,7 +394,7 @@ def animate():
         Ztar_new = Ztar
         
         theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0]             
-        if motors_found == True:
+        if motors_found and ok:
             if k == 0:
                 servo.MoveTo(servo_dict[f'F{k}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
                 servo.MoveTo(servo_dict[f'F{k}_B'], ang2bit(np.rad2deg(theta_b)+90))
@@ -388,3 +411,4 @@ timer.start(speed) # set speed in ms
 main_window.show()
 sys.exit(app.exec_())
                                            
+
