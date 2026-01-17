@@ -14,30 +14,31 @@ from Claw_Functions_ST3215 import * # Home brew package
 
 # ======================================================= File Imports =========================================================
 version = 'V0.2'
-stl_path_A = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_A.STL"
-stl_path_B = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_B.STL"
-stl_path_C = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_C.STL"
-stl_path_T = r"..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_T.STL"
+stl_path_A = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_A.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_B.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_C.STL"
+stl_path_T = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_T.STL"
 
-stl_path_Plate1 = r"..\..\Hardware\3D Models\Items\Plate_1.STL"
-stl_path_Plate2 = r"..\..\Hardware\3D Models\Items\Plate_2.STL"
-stl_path_Baseball = r"..\..\Hardware\3D Models\Items\Baseball.STL"
-items_on = False
+stl_path_Plate1 = r"..\..\..\Hardware\3D Models\Items\Plate_1.STL"
+stl_path_Plate2 = r"..\..\..\Hardware\3D Models\Items\Plate_2.STL"
+stl_path_Baseball = r"..\..\..\Hardware\3D Models\Items\Baseball.STL"
+items_on = True
 # ======================================================= Parameters =========================================================
 
 # Digit Lengths
 A = 40.7 # bottom digit + motor A height
-B = 57.7 # lower-middle digit + motor B height
+B = 0 # lower-middle digit + motor B height
 C = 57.7 # upper-middle middle 2 digit + motor B height
 T = 50 # top digit height
+A_x = 30
 
 num_fingers = 5
 
-Offset_R    = 59.075  # From origin (0,0,0)
-Offset_R    = 85  # From origin (0,0,0)
+Offset_R    =  60  # From origin (0,0,0)
+# Offset_R    = 85  # From origin (0,0,0)
 
 R_tar       = 100  # Radius of target circle path 
-H_tar       = 190  # Height of target circle path
+H_tar       = 130  # Height of target circle path
 
 
 delta_Z     = 10   # Dropping from path for reset 
@@ -133,19 +134,19 @@ opacity_stl = 1
 opacity_color = "lightgray"
 opacity_item = items_on
 path_colors = ['tab:green','red','tab:orange','cyan','magenta']
-joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
+joint_colors = ['tab:blue', '#BFBFBF','magenta', '#808080', '#404040', '#000000']
 
 
 for p in range(num_fingers):
-    for j in range(5):
+    for j in range(6):
         pyvista_poly_dict_BAS[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
-        if j != 4:
+        if j != 5:
             pyvista_actor_dict_BAS[f'F{p}J{j}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}J{j}'], color=joint_colors[j], point_size=10, render_points_as_spheres=True)
         else:
             pyvista_actor_dict_BAS[f'F{p}J{j}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}J{j}'], color=path_colors[p], point_size=10, render_points_as_spheres=True)
 
     # Lines - Fingers and Paths 
-    pyvista_poly_dict_BAS[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*5), lines=np.hstack([[5, *range(5)]]))
+    pyvista_poly_dict_BAS[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*6), lines=np.hstack([[6, *range(6)]]))
     pyvista_actor_dict_BAS[f'F{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}'], color='black', line_width=3)
     pyvista_poly_dict_BAS[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
     pyvista_actor_dict_BAS[f'P{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'P{p}'], color=path_colors[p], line_width=3)
@@ -234,7 +235,7 @@ dtz = np.zeros((num_fingers))
 for i in range(points):
     Xtar, Ytar, Ztar = master_path[0, :, int(i)]
     try:
-        theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
+        theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0] 
     except Exception as e:
         print('\033[91m EXITING - not all points in path have a solution.\033[0m')
         sys.exit(1)
@@ -248,12 +249,7 @@ pyvista_poly_dict_collision = {}
 for p in range(num_fingers):
     pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
     
-
-
-
-
-
-
+    
 def animate():
     global val_anim, val_motor
 
@@ -283,8 +279,8 @@ def animate():
         Xtar_new, Ytar_new = rotate_point((0,0), (Xtar, Ytar),Offset_theta)
         Ztar_new = Ztar
         
-        theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
-        coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, B, C, T)
+        theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0] 
+        coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
         coords = rotate_vector(coords_unr, Offset_theta)
         
         # Finds change in theta
@@ -292,7 +288,7 @@ def animate():
           
         
        ############ Ball and Stick Actors ############
-        for j in range(5):        
+        for j in range(6):        
             pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
         
         pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
@@ -393,7 +389,7 @@ def animate():
         Xtar_new, Ytar_new = rotate_point((0,0), (Xtar, Ytar),Offset_theta)
         Ztar_new = Ztar
         
-        theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0]             
+        theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0]             
         if motors_found and ok:
             if k == 0:
                 servo.MoveTo(servo_dict[f'F{k}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
