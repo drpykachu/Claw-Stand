@@ -14,10 +14,10 @@ from Claw_Functions_ST3215 import * # Home brew package
 
 # ======================================================= File Imports =========================================================
 version = 'V0.3'
-stl_path_A = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_A.STL"
-stl_path_Ax = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Arm_A.STL"
-stl_path_B = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_B.STL"
-stl_path_C = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_C.STL"
+stl_path_A  = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_A.STL"
+stl_path_Ax = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_A_Arm.STL"
+stl_path_B  = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_B.STL"
+stl_path_C  = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_C.STL"
 
 stl_path_Plate1 = r"..\..\..\Hardware\3D Models\Items\Plate_1.STL"
 stl_path_Plate2 = r"..\..\..\Hardware\3D Models\Items\Plate_2.STL"
@@ -34,10 +34,10 @@ A_x = 42.775
 
 num_fingers = 5
 
-Offset_R    = 79.925  # From origin (0,0,0)
+Offset_R    = 49.925  # From origin (0,0,0)
 
 R_tar       = 100  # Radius of target circle path 
-H_tar       = 130  # Height of target circle path
+H_tar       = 200  # Height of target circle path
 
 
 delta_Z     = 10   # Dropping from path for reset 
@@ -136,7 +136,7 @@ path_colors = ['tab:green','red','tab:orange','cyan','magenta']
 joint_colors = ['tab:blue', '#BFBFBF','magenta', '#808080', '#404040', '#000000']
 
 
-for p in range(1):
+for p in range(num_fingers):
     for j in range(6):
         pyvista_poly_dict_BAS[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
         if j != 5:
@@ -158,34 +158,32 @@ for p in range(1):
     translate_object(pyvista_poly_dict[f'F{p}M{0}'], (0,-extents[1]/2,0))        # Centers object
     rotate_around_line(pyvista_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -Offset_theta_master[p]) # Sets the position correctly
 # 
-#     # Motor A Arm
-#     mesh = trimesh.load_mesh(stl_path_Ax)
-#     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
-#     pyvista_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-#     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-#     translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
-#     rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
-#     translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-10))        # Lines up to motor center
-#     rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-# 
-#     # Motor B
-#     mesh = trimesh.load_mesh(stl_path_B)
-#     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
-#     pyvista_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-#     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-#     translate_object(pyvista_poly_dict[f'F{p}M{2}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
-#     rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-#     translate_object(pyvista_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-10))        # Centers object
-#     rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-# 
-#     # Motor C
-#     mesh = trimesh.load_mesh(stl_path_C)
-#     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
-#     pyvista_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-#     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-#     translate_object(pyvista_poly_dict[f'F{p}M{3}'], (-extents[0]/2,-extents[1]/2,0))      # Centers object
-#     translate_object(pyvista_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-10))        # Centers object
-#     rotate_around_line(pyvista_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+    # Motor A Arm
+    mesh = trimesh.load_mesh(stl_path_Ax)
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
+    pyvista_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(pyvista_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
+    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
+    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R+16.125,0,A-12.5))        # Lines up to motor center
+    rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+
+    # Motor B
+    mesh = trimesh.load_mesh(stl_path_B)
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
+    pyvista_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(pyvista_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
+    translate_object(pyvista_poly_dict[f'F{p}M{2}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
+    translate_object(pyvista_poly_dict[f'F{p}M{2}'], (Offset_R+A_x+5,0,A+B-12.5))        # Centers object
+    rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+
+    # Motor C
+    mesh = trimesh.load_mesh(stl_path_C)
+    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
+    pyvista_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+    plotter.add_mesh(pyvista_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
+    translate_object(pyvista_poly_dict[f'F{p}M{3}'], (-extents[0]/2,-extents[1]/2,0))      # Centers object
+    translate_object(pyvista_poly_dict[f'F{p}M{3}'], (Offset_R+A_x+5,0,A+B+C-12.5))        # Centers object
+    rotate_around_line(pyvista_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 ####### Items
 if items_on:
@@ -293,7 +291,7 @@ def animate():
         master_path_plot = rotate_vector(master_path[k], Offset_theta)
         pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
          
-        ############ Rotates Motor B Segment ############
+        ############ Rotates Motor Ax Segment ############
         # Casts it back to center for easier rotational math
         rotate_around_line(pyvista_poly_dict[f'F{k}M{1}'], (0,0,0), vector_z, -Offset_theta_master[k]) # Sets the position correctly
         translate_object(pyvista_poly_dict[f'F{k}M{1}'], (-Offset_R,0,0))        # Lines up to motor center
@@ -308,10 +306,10 @@ def animate():
         translate_object(pyvista_poly_dict[f'F{k}M{1}'], (Offset_R,0,0))        # Lines up to motor center
         rotate_around_line(pyvista_poly_dict[f'F{k}M{1}'], (0,0,0), vector_z, Offset_theta_master[k]) # Sets the position correctly
         
-        ############ Rotates Motor C Segment ############
+        ############ Rotates Motor B Segment ############
         # Casts it back to center for easier rotational math
         rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], (0,0,0), vector_z, -Offset_theta_master[k]) 
-        translate_object(pyvista_poly_dict[f'F{k}M{2}'], (-Offset_R,0,0))
+        translate_object(pyvista_poly_dict[f'F{k}M{2}'], (-(Offset_R+A_x),0,0))
         
         if primerC[k] != 0:
             rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point1, vector_x, -(np.rad2deg(theta_a)-90))
@@ -324,13 +322,13 @@ def animate():
             rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point1, vector_x, np.rad2deg(theta_a)-90)
             primerC[k] = 1
 
-        translate_object(pyvista_poly_dict[f'F{k}M{2}'], (Offset_R,0,0))        # Lines up to motor center
+        translate_object(pyvista_poly_dict[f'F{k}M{2}'], ((Offset_R+A_x),0,0))        # Lines up to motor center
         rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], (0,0,0), vector_z, Offset_theta_master[k]) # Sets the position correctly
 
-        ############ Rotates Motor T Segment ############
+        ############ Rotates Motor C Segment ############
         # Casts it back to center for easier rotational math
         rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], (0,0,0), vector_z, -Offset_theta_master[k]) 
-        translate_object(pyvista_poly_dict[f'F{k}M{3}'], (-Offset_R,0,0))
+        translate_object(pyvista_poly_dict[f'F{k}M{3}'], (-(Offset_R+A_x),0,0))
 
         if primerT[k] != 0:
             rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point1, vector_x, -(np.rad2deg(theta_a)-90))
@@ -363,7 +361,7 @@ def animate():
             rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point1, vector_x, np.rad2deg(theta_a)-90)
             primerT[k] = 1
             
-        translate_object(pyvista_poly_dict[f'F{k}M{3}'], (Offset_R,0,0))        # Lines up to motor center
+        translate_object(pyvista_poly_dict[f'F{k}M{3}'], ((Offset_R+A_x),0,0))        # Lines up to motor center
         rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], (0,0,0), vector_z, Offset_theta_master[k]) # Sets the position correctly
 
         delta_theta[:,k] = np.array([theta_a, theta_b, theta_c])
@@ -397,7 +395,7 @@ def animate():
     
 
 timer = QTimer()
-# timer.timeout.connect(animate)
+timer.timeout.connect(animate)
 timer.start(speed) # set speed in ms
 
 # === Show window ===
