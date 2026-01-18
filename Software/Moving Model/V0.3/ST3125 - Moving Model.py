@@ -13,29 +13,28 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from Claw_Functions_ST3215 import * # Home brew package
 
 # ======================================================= File Imports =========================================================
-version = 'V0.2'
-stl_path_A = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_A.STL"
-stl_path_B = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_B.STL"
-stl_path_C = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_C.STL"
-stl_path_T = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Assembly_Motor_T.STL"
+version = 'V0.3'
+stl_path_A = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_A.STL"
+stl_path_Ax = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Arm_A.STL"
+stl_path_B = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_B.STL"
+stl_path_C = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_C.STL"
 
 stl_path_Plate1 = r"..\..\..\Hardware\3D Models\Items\Plate_1.STL"
 stl_path_Plate2 = r"..\..\..\Hardware\3D Models\Items\Plate_2.STL"
 stl_path_Baseball = r"..\..\..\Hardware\3D Models\Items\Baseball.STL"
-items_on = True
+items_on = False
 # ======================================================= Parameters =========================================================
 
 # Digit Lengths
-A = 40.7 # bottom digit + motor A height
+A = 42.5 # bottom digit + motor A height
 B = 0 # lower-middle digit + motor B height
-C = 57.7 # upper-middle middle 2 digit + motor B height
-T = 50 # top digit height
-A_x = 30
+C = 87.5 # upper-middle middle 2 digit + motor B height
+T = 92.5 # top digit height
+A_x = 42.775
 
 num_fingers = 5
 
-Offset_R    =  60  # From origin (0,0,0)
-# Offset_R    = 85  # From origin (0,0,0)
+Offset_R    = 79.925  # From origin (0,0,0)
 
 R_tar       = 100  # Radius of target circle path 
 H_tar       = 130  # Height of target circle path
@@ -137,7 +136,7 @@ path_colors = ['tab:green','red','tab:orange','cyan','magenta']
 joint_colors = ['tab:blue', '#BFBFBF','magenta', '#808080', '#404040', '#000000']
 
 
-for p in range(num_fingers):
+for p in range(1):
     for j in range(6):
         pyvista_poly_dict_BAS[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
         if j != 5:
@@ -156,39 +155,37 @@ for p in range(num_fingers):
     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     pyvista_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{0}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{0}'], (-extents[0]/2,0,0))        # Centers object
-    translate_object(pyvista_poly_dict[f'F{p}M{0}'], (-0.5,0,0))        # Centers object
-    rotate_around_line(pyvista_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -90) # Sets the position correctly
+    translate_object(pyvista_poly_dict[f'F{p}M{0}'], (0,-extents[1]/2,0))        # Centers object
     rotate_around_line(pyvista_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -Offset_theta_master[p]) # Sets the position correctly
-
-    # Motor B
-    mesh = trimesh.load_mesh(stl_path_B)
-    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
-    pyvista_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-    plotter.add_mesh(pyvista_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
-    rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
-    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-10))        # Lines up to motor center
-    rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-
-    # Motor C
-    mesh = trimesh.load_mesh(stl_path_C)
-    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
-    pyvista_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-    plotter.add_mesh(pyvista_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{2}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
-    rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
-    translate_object(pyvista_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-10))        # Centers object
-    rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
-
-    # Motor T
-    mesh = trimesh.load_mesh(stl_path_T)
-    pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
-    pyvista_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
-    plotter.add_mesh(pyvista_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{3}'], (-extents[0]/2,-extents[1]/2,0))      # Centers object
-    translate_object(pyvista_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-10))        # Centers object
-    rotate_around_line(pyvista_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+# 
+#     # Motor A Arm
+#     mesh = trimesh.load_mesh(stl_path_Ax)
+#     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
+#     pyvista_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+#     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
+#     translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
+#     rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), -90) # Sets the position correctly
+#     translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R,0,A-10))        # Lines up to motor center
+#     rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+# 
+#     # Motor B
+#     mesh = trimesh.load_mesh(stl_path_B)
+#     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
+#     pyvista_poly_dict[f'F{p}M{2}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+#     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{2}'], color=opacity_color, opacity=opacity_stl)
+#     translate_object(pyvista_poly_dict[f'F{p}M{2}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
+#     rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), -180) # Sets the position correctly
+#     translate_object(pyvista_poly_dict[f'F{p}M{2}'], (Offset_R,0,A+B-10))        # Centers object
+#     rotate_around_line(pyvista_poly_dict[f'F{p}M{2}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
+# 
+#     # Motor C
+#     mesh = trimesh.load_mesh(stl_path_C)
+#     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
+#     pyvista_poly_dict[f'F{p}M{3}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
+#     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{3}'], color=opacity_color, opacity=opacity_stl)
+#     translate_object(pyvista_poly_dict[f'F{p}M{3}'], (-extents[0]/2,-extents[1]/2,0))      # Centers object
+#     translate_object(pyvista_poly_dict[f'F{p}M{3}'], (Offset_R,0,A+B+C-10))        # Centers object
+#     rotate_around_line(pyvista_poly_dict[f'F{p}M{3}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
 ####### Items
 if items_on:
@@ -246,8 +243,8 @@ val_anim = 0
 val_motor = 0
 # ============================================================ Collision ============================================================
 pyvista_poly_dict_collision = {}
-for p in range(num_fingers):
-    pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
+# for p in range(num_fingers):
+#     pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
     
     
 def animate():
@@ -400,7 +397,7 @@ def animate():
     
 
 timer = QTimer()
-timer.timeout.connect(animate)
+# timer.timeout.connect(animate)
 timer.start(speed) # set speed in ms
 
 # === Show window ===

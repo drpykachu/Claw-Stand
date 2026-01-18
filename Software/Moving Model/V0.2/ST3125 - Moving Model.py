@@ -136,7 +136,7 @@ path_colors = ['tab:green','red','tab:orange','cyan','magenta']
 joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
 
 
-for p in range(num_fingers):
+for p in range(1):
     for j in range(5):
         pyvista_poly_dict_BAS[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
         if j != 4:
@@ -245,8 +245,8 @@ val_anim = 0
 val_motor = 0
 # ============================================================ Collision ============================================================
 pyvista_poly_dict_collision = {}
-for p in range(num_fingers):
-    pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
+# for p in range(num_fingers):
+#     pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
     
 
 
@@ -404,7 +404,7 @@ def animate():
     
 
 timer = QTimer()
-timer.timeout.connect(animate)
+# timer.timeout.connect(animate)
 timer.start(speed) # set speed in ms
 
 # === Show window ===
