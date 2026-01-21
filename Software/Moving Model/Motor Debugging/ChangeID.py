@@ -5,7 +5,7 @@ import time
 servo = ST3215('COM15')
 
 sts_id = 3
-new_id = 4
+new_id = 12
 
 if servo.PingServo(sts_id) == False:
     print('No unID\'d servo available')

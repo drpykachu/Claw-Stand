@@ -58,9 +58,9 @@ try:
     servo = ST3215('COM15')
     servo_dict = {}
     for i in range(num_fingers):
-        servo_dict[f'F{i}_A'] = 2+i*3
-        servo_dict[f'F{i}_B'] = 3+i*3
-        servo_dict[f'F{i}_C'] = 4+i*3
+        servo_dict[f'F{i}_A'] = 10+i*3
+        servo_dict[f'F{i}_B'] = 11+i*3
+        servo_dict[f'F{i}_C'] = 12 + i*3
     
     servo_here = []
     print('Available Servos:')
@@ -70,10 +70,15 @@ try:
     print(servo_here)
     
     #### Centers Motors ####
-    center = 2048
+    center_A_C = 2048
+    center_B   = 2250
     for motors in servo_here:
-        servo.MoveTo(servo_dict[motors], center, speed = 4000)
-    
+        print(motors[-1])
+        if motors[-1] == 'B':
+            servo.MoveTo(servo_dict[motors], center_B)
+        else:
+            servo.MoveTo(servo_dict[motors], center_A_C)
+            
     #### Sets Motor Speed ####
     motor_speed = 4096
     for motors in servo_here:
@@ -388,8 +393,8 @@ def animate():
         if motors_found and ok:
             if k == 0:
                 servo.MoveTo(servo_dict[f'F{k}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
-                servo.MoveTo(servo_dict[f'F{k}_B'], ang2bit(np.rad2deg(theta_b)+90))
-                servo.MoveTo(servo_dict[f'F{k}_A'], ang2bit(360-(np.rad2deg(theta_a)+90)))
+                servo.MoveTo(servo_dict[f'F{k}_B'], ang2bit(180 + (np.rad2deg(theta_b))))
+                servo.MoveTo(servo_dict[f'F{k}_A'], ang2bit((np.rad2deg(theta_a)+90)))
 
     val_motor += 1
     
