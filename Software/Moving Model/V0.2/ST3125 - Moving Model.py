@@ -39,6 +39,7 @@ Offset_R    = 85  # From origin (0,0,0)
 R_tar       = 100  # Radius of target circle path 
 H_tar       = 190  # Height of target circle path
 
+minstep    = 360/4096*1
 
 delta_Z     = 10   # Dropping from path for reset 
 points      = 300  # Number of points for path
@@ -136,7 +137,7 @@ path_colors = ['tab:green','red','tab:orange','cyan','magenta']
 joint_colors = ['tab:blue', '#BFBFBF', '#808080', '#404040', '#000000']
 
 
-for p in range(1):
+for p in range(num_fingers):
     for j in range(5):
         pyvista_poly_dict_BAS[f'F{p}J{j}'] = pv.PolyData([0.0, 0.0, 0.0])
         if j != 4:
@@ -230,14 +231,28 @@ dtz = np.zeros((num_fingers))
 
 
 # Initial check - finds max angle and steps
+minmax_a = []
+minmax_b = []
+minmax_c = []
 
 for i in range(points):
     Xtar, Ytar, Ztar = master_path[0, :, int(i)]
     try:
         theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0] 
+        minmax_a.append(theta_a)
+        minmax_b.append(theta_b)
+        minmax_c.append(theta_c)
+        
     except Exception as e:
         print('\033[91m EXITING - not all points in path have a solution.\033[0m')
         sys.exit(1)
+        
+        
+print(round(np.rad2deg(max(minmax_a) - min(minmax_a))/minstep))
+print(round(np.rad2deg(max(minmax_b) - min(minmax_b))/minstep))
+print(round(np.rad2deg(max(minmax_c) - min(minmax_c))/minstep))
+        
+        
 
 camera_distance(plotter, distance = 1000)
 
@@ -404,7 +419,7 @@ def animate():
     
 
 timer = QTimer()
-# timer.timeout.connect(animate)
+timer.timeout.connect(animate)
 timer.start(speed) # set speed in ms
 
 # === Show window ===

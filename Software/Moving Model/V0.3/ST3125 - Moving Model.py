@@ -28,22 +28,27 @@ items_on = False
 # Digit Lengths
 A = 42.5 # bottom digit + motor A height
 B = 0 # lower-middle digit + motor B height
+
 C = 87.5 # upper-middle middle 2 digit + motor B height
 T = 92.5 # top digit height
-A_x = 42.775
+
+C = 75 # upper-middle middle 2 digit + motor B height
+T = 72.5 # top digit height
+A_x = 52.775
 
 num_fingers = 5
 
-Offset_R    = 49.925  # From origin (0,0,0)
+Offset_R    = 59.925  # From origin (0,0,0)
 
 R_tar       = 100  # Radius of target circle path 
-H_tar       = 200  # Height of target circle path
+H_tar       = 170  # Height of target circle path
 
+minstep    = 360/4096*1
 
 delta_Z     = 10   # Dropping from path for reset 
-points      = 300  # Number of points for path
+points      = 750  # Number of points for path
 
-speed       = 25   # Animation speed
+speed       = 100   # Animation speed
 
 # ================= Pathing ===================
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -71,9 +76,8 @@ try:
     
     #### Centers Motors ####
     center_A_C = 2048
-    center_B   = 2250
+    center_B   = 3000
     for motors in servo_here:
-        print(motors[-1])
         if motors[-1] == 'B':
             servo.MoveTo(servo_dict[motors], center_B)
         else:
@@ -229,18 +233,31 @@ point3 = (0, 0, A+B+C) # where the C joint is
 dtx = np.zeros((num_fingers))
 dtz = np.zeros((num_fingers))
 
-
+minmax_a = []
+minmax_b = []
+minmax_c = []
 # Initial check - finds max angle and steps
 
 for i in range(points):
     Xtar, Ytar, Ztar = master_path[0, :, int(i)]
     try:
-        theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0] 
+        theta_a,theta_b,theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0]
+        minmax_a.append(theta_a)
+        minmax_b.append(theta_b)
+        minmax_c.append(theta_c)
     except Exception as e:
         print('\033[91m EXITING - not all points in path have a solution.\033[0m')
         sys.exit(1)
 
+
+print(round(np.rad2deg(max(minmax_a) - min(minmax_a))/minstep))
+print(round(np.rad2deg(max(minmax_b) - min(minmax_b))/minstep))
+print(round(np.rad2deg(max(minmax_c) - min(minmax_c))/minstep))
+
 camera_distance(plotter, distance = 1000)
+
+
+
 
 val_anim = 0
 val_motor = 0
@@ -249,9 +266,13 @@ pyvista_poly_dict_collision = {}
 # for p in range(num_fingers):
 #     pyvista_poly_dict_collision[f'F{p}M{3}'] = pyvista_poly_dict[f'F{p}M{3}']
     
-    
+theta_reals = np.ones(3)*361.0 # random seed greater than any angle
+theta_a = 361.0
+theta_b = 361.0
+theta_c = 361.0
+
 def animate():
-    global val_anim, val_motor
+    global val_anim, val_motor, theta_a, theta_b, theta_c
 
     #### Updates Animation
     # resets animation loop
@@ -279,7 +300,36 @@ def animate():
         Xtar_new, Ytar_new = rotate_point((0,0), (Xtar, Ytar),Offset_theta)
         Ztar_new = Ztar
         
-        theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0] 
+#         theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0]
+        
+        theta_reals = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0]
+        
+        # checks for a change in angle based on the stepper motor step. makes it go from indefinite to a real world
+        if theta_a == 361.0:
+                theta_a = theta_reals[0]
+                theta_b = theta_reals[1]
+                theta_c = theta_reals[2]
+        
+        err = theta_reals[0] - theta_a
+        if abs(np.rad2deg(err)) > minstep:
+            nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+            step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+            theta_a += step_change
+
+        err = theta_reals[1] - theta_b
+        if abs(np.rad2deg(err)) > minstep:
+            nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+            step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+            theta_b += step_change
+
+        err = theta_reals[2] - theta_c
+        if abs(np.rad2deg(err)) > minstep:
+            nsteps = int(np.ceil(abs(np.rad2deg(err)) / minstep))
+            step_change = np.sign(err) * nsteps * np.deg2rad(minstep)
+            theta_c += step_change
+        
+        
+        
         coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
         coords = rotate_vector(coords_unr, Offset_theta)
         
@@ -391,10 +441,10 @@ def animate():
         
         theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0]             
         if motors_found and ok:
-            if k == 0:
-                servo.MoveTo(servo_dict[f'F{k}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
-                servo.MoveTo(servo_dict[f'F{k}_B'], ang2bit(180 + (np.rad2deg(theta_b))))
-                servo.MoveTo(servo_dict[f'F{k}_A'], ang2bit((np.rad2deg(theta_a)+90)))
+            if k == 4:
+                servo.MoveTo(servo_dict[f'F{0}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
+                servo.MoveTo(servo_dict[f'F{0}_B'], ang2bit(180 + (np.rad2deg(theta_b))))
+                servo.MoveTo(servo_dict[f'F{0}_A'], ang2bit((np.rad2deg(theta_a)+90)))
 
     val_motor += 1
     
