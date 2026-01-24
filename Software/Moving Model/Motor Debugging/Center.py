@@ -6,9 +6,9 @@ try:
     servo = ST3215('COM15')
     servo_dict = {}
     for i in range(num_fingers):
-        servo_dict[f'F{i+1}_A'] = 10+i*3
-        servo_dict[f'F{i+1}_B'] = 11+i*3
-        servo_dict[f'F{i+1}_C'] = 12+i*3
+        servo_dict[f'F{i}_A'] = 10*i+0
+        servo_dict[f'F{i}_B'] = 10*i+1
+        servo_dict[f'F{i}_C'] = 10*i+2
 
     servo_here = []
     print('Available Servos:')
@@ -18,9 +18,8 @@ try:
     print(servo_here)
 
     #### Centers Motors ####
-    center = 2500
+    center = 2048     
     for motors in servo_here:
-
         servo.MoveTo(servo_dict[motors], center, speed = 4000)
 
 

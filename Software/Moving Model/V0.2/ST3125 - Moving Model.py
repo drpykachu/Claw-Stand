@@ -411,8 +411,8 @@ def animate():
         theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, B, C, T,Offset_R)[0]             
         if motors_found and ok:
             if k == 0:
-                servo.MoveTo(servo_dict[f'F{k}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
-                servo.MoveTo(servo_dict[f'F{k}_B'], ang2bit(np.rad2deg(theta_b)+90))
+#                 servo.MoveTo(servo_dict[f'F{k}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
+#                 servo.MoveTo(servo_dict[f'F{k}_B'], ang2bit(np.rad2deg(theta_b)+90))
                 servo.MoveTo(servo_dict[f'F{k}_A'], ang2bit(360-(np.rad2deg(theta_a)+90)))
 
     val_motor += 1

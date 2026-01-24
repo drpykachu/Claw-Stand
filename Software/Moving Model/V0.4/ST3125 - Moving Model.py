@@ -26,7 +26,7 @@ items_on = False
 # ======================================================= Parameters =========================================================
 
 # Digit Lengths
-A = 42.5 # bottom digit + motor A height
+A = 45 # bottom digit + motor A height
 B = 19.8 # lower-middle digit + motor B height
 
 
@@ -46,9 +46,9 @@ H_tar       = 190  # Height of target circle path
 minstep    = 360/4096*1
 
 delta_Z     = 10   # Dropping from path for reset 
-points      = 750  # Number of points for path
+points      = 400  # Number of points for path
 
-speed       = 100   # Animation speed
+speed       = 5   # Animation speed
 
 # ================= Pathing ===================
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -63,9 +63,9 @@ try:
     servo = ST3215('COM15')
     servo_dict = {}
     for i in range(num_fingers):
-        servo_dict[f'F{i}_A'] = 10+i*3
-        servo_dict[f'F{i}_B'] = 11+i*3
-        servo_dict[f'F{i}_C'] = 12 + i*3
+        servo_dict[f'F{i}_A'] = 10*i+0
+        servo_dict[f'F{i}_B'] = 10*i+1
+        servo_dict[f'F{i}_C'] = 10*i+2
     
     servo_here = []
     print('Available Servos:')
@@ -76,7 +76,7 @@ try:
     
     #### Centers Motors ####
     center_A_C = 2048
-    center_B   = 3000
+    center_B   = 2048
     for motors in servo_here:
         if motors[-1] == 'B':
             servo.MoveTo(servo_dict[motors], center_B)
@@ -250,9 +250,9 @@ for i in range(points):
         sys.exit(1)
 
 
-print(round(np.rad2deg(max(minmax_a) - min(minmax_a))/minstep))
-print(round(np.rad2deg(max(minmax_b) - min(minmax_b))/minstep))
-print(round(np.rad2deg(max(minmax_c) - min(minmax_c))/minstep))
+# print(round(np.rad2deg(max(minmax_a) - min(minmax_a))/minstep))
+# print(round(np.rad2deg(max(minmax_b) - min(minmax_b))/minstep))
+# print(round(np.rad2deg(max(minmax_c) - min(minmax_c))/minstep))
 
 camera_distance(plotter, distance = 1000)
 
@@ -441,10 +441,10 @@ def animate():
         
         theta_a, theta_b, theta_c = solve_thetas(Ztar, Ytar, Xtar, A, A_x, B, C, T,Offset_R)[0]             
         if motors_found and ok:
-            if k == 4:
-                servo.MoveTo(servo_dict[f'F{0}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
-                servo.MoveTo(servo_dict[f'F{0}_B'], ang2bit(180 + (np.rad2deg(theta_b))))
-                servo.MoveTo(servo_dict[f'F{0}_A'], ang2bit((np.rad2deg(theta_a)+90)))
+            if k == 0:
+                servo.MoveTo(servo_dict[f'F{2}_C'], ang2bit(180 + (np.rad2deg(theta_c) - np.rad2deg(theta_b))))
+                servo.MoveTo(servo_dict[f'F{2}_B'], ang2bit(	(np.rad2deg(theta_b)+90)))
+                servo.MoveTo(servo_dict[f'F{2}_A'], ang2bit((np.rad2deg(theta_a)+90)))
 
     val_motor += 1
     
