@@ -6,9 +6,9 @@ try:
     servo = ST3215('COM15')
     servo_dict = {}
     for i in range(num_fingers):
-        servo_dict[f'F{i}_A'] = 10*i+0
-        servo_dict[f'F{i}_B'] = 10*i+1
-        servo_dict[f'F{i}_C'] = 10*i+2
+        servo_dict[f'F{i+1}_A'] = 10*i+0+10
+        servo_dict[f'F{i+1}_B'] = 10*i+1+10
+        servo_dict[f'F{i+1}_C'] = 10*i+2+10
 
     servo_here = []
     print('Available Servos:')

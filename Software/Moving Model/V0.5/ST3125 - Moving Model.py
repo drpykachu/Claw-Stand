@@ -29,8 +29,6 @@ items_on = False
 A = 45 # bottom digit + motor A height
 B = 19.8 # lower-middle digit + motor B height
 
-
-
 C = 75 # upper-middle middle 2 digit + motor B height
 T = 65 # top digit height
 
