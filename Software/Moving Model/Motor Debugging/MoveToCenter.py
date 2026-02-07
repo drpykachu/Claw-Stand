@@ -20,7 +20,7 @@ try:
     #### Centers Motors ####
     center = 2048     
     for motors in servo_here:
-        servo.MoveTo(12, center, speed = 4000)
+        servo.MoveTo(servo_dict[motors], center, speed = 4000)
 
 
 

@@ -4,6 +4,7 @@ import time
 
 servo = ST3215('COM15')
 
-servo_ID = 52   # range(0,100)
-
-servo.MoveTo(servo_ID, 2125, speed = 4000)
+motors = [10,20,30,40,50]
+for k in range(len(motors)):
+    servo_ID = motors[k]   # range(0,100)
+    servo.MoveTo(servo_ID, 2048, speed = 4000)
