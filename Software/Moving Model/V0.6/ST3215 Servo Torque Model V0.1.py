@@ -51,13 +51,19 @@ deflect_angle = 270
 extra_winds = 1
 SPRING_K = 7.5 # from McMaster Carr 9271K581
 Sl = 0.07*8.75
+print(Sl)
+
+deflect_angle = 270
+extra_winds = 1
+SPRING_K = 7.5 # from McMaster Carr 9271K581
+Sl = 0.059*8.75
+print(Sl)
 
 # deflect_angle = 360
 # extra_winds = 0
 # SPRING_K = 9.2 # from McMaster Carr 9271K967
 # Sl = 0.078*10.5
-
-print(Sl)
+# print(Sl)
 
 SPRING_K = (SPRING_K / 8.85075) / 270
 G = 9.8
