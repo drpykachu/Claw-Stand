@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from Claw_Functions_ST3215 import * # Home brew package
 
 # ======================================================= File Imports =========================================================
-version = 'V0.5'
+version = 'V0.6'
 stl_path_A  = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_A.STL"
 stl_path_Ax = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_A_Arm.STL"
 stl_path_B  = r"..\..\..\Hardware\3D Models\ST3215\\" + version + r"\Python_STL\ST3215_Motor_B.STL"
@@ -36,7 +36,7 @@ A_x = 39.8
 
 num_fingers = 5
 
-Offset_R    = 60.075  # From origin (0,0,0)
+Offset_R    = 65.075 # From origin (0,0,0)
 
 R_tar       = 80  # Radius of target circle path 
 H_tar       = 190  # Height of target circle path
@@ -162,7 +162,7 @@ for p in range(num_fingers):
     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     pyvista_poly_dict[f'F{p}M{0}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{0}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{0}'], (0,-extents[1]/2,0))        # Centers object
+    translate_object(pyvista_poly_dict[f'F{p}M{0}'], (0,-extents[1]/2-0.5,0))        # Centers object
     rotate_around_line(pyvista_poly_dict[f'F{p}M{0}'], (0,0,0), vector_z, -Offset_theta_master[p]) # Sets the position correctly
 
     # Motor A Arm
@@ -170,8 +170,8 @@ for p in range(num_fingers):
     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     pyvista_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-extents[1]/2,0))        # Centers object
-    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R+17.5,0,A-33.7))        # Lines up to motor center
+    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-23.25,0))        # Centers object
+    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R+4,0,A-33.7))        # Lines up to motor center
     rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
     # Motor B

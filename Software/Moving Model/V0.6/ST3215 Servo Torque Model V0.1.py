@@ -25,7 +25,7 @@ T = 65 # top digit height
 A_x = 39.8
 
 NUM_FINGERS = 5
-Offset_R    = 60.075  # From origin (0,0,0)
+Offset_R    = 65  # From origin (0,0,0)
 R_TARGET = 80
 H_tar    = 190  # Height of target circle path
 
@@ -35,7 +35,7 @@ POINTS = 200
 # Masses (kg)
 WEIGHT_BEARING = 0 / 1000
 WEIGHT_MOTOR = 70 / 1000
-BUFFER = 15 / 1000 # extra plastic, etc.
+BUFFER = 0 / 1000 # extra plastic, etc.
 
 HOLDER_MOTOR_B = 30 / 1000 + BUFFER
 HOLDER_MOTOR_C = 30 / 1000 + BUFFER
@@ -48,22 +48,11 @@ MOTOR_TORQUE = MOTOR_TORQUE_KGCM * 98.0665 / 1000
 
 
 deflect_angle = 270
-extra_winds = 1
-SPRING_K = 7.5 # from McMaster Carr 9271K581
-Sl = 0.07*8.75
-print(Sl)
-
-deflect_angle = 270
-extra_winds = 1
+extra_winds = 0
 SPRING_K = 7.5 # from McMaster Carr 9271K581
 Sl = 0.059*8.75
 print(Sl)
 
-# deflect_angle = 360
-# extra_winds = 0
-# SPRING_K = 9.2 # from McMaster Carr 9271K967
-# Sl = 0.078*10.5
-# print(Sl)
 
 SPRING_K = (SPRING_K / 8.85075) / 270
 G = 9.8
@@ -164,15 +153,13 @@ fig, ax = plt.subplots(
 wt, st = [], []
 i = 2
 
-theta_offfset  = 90
-
 for theta in x:
     active = minmax[i][0] <= theta <= minmax[i][1]
     weights, lengths = motor_loads(active)
 
     moments = np.sum(weights * lengths, axis=1)
     wt.append(moments[i] * G * np.cos(np.deg2rad(theta)) * 1000)
-    st.append(SPRING_K * (theta - ((deflect_angle+360*extra_winds) - theta_offfset) ) * 1000)
+    st.append(SPRING_K * (theta + (360*extra_winds) +90) * 1000)
 
 ax.plot(x, np.ones_like(x) * MOTOR_TORQUE * 1000, "k", label="Motor")
 ax.plot(x, -np.ones_like(x) * MOTOR_TORQUE * 1000, "k")
