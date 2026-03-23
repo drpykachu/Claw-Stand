@@ -18,10 +18,8 @@ from Claw_Functions_ST3215 import *  # Homebrew package
 # Digit Lengths
 A = 45 # bottom digit + motor A height
 B = 19.8 # lower-middle digit + motor B height
-
 C = 75 # upper-middle middle 2 digit + motor B height
 T = 65 # top digit height
-
 A_x = 39.8
 
 NUM_FINGERS = 5
@@ -47,19 +45,18 @@ MOTOR_TORQUE = MOTOR_TORQUE_KGCM * 98.0665 / 1000
 
 
 
-deflect_angle = 270
+
 extra_winds = 0
 SPRING_K = 7.5 # from McMaster Carr 9271K581
-Sl = 0.059*8.75
-print(Sl)
+spring_angle_offset = 45 # 0 is aligned with the finger, -90 is loaded left, 90 is loaded right
 
 
 SPRING_K = (SPRING_K / 8.85075) / 270
-G = 9.8
 
 # Load
-PLATE_LB = 10
+PLATE_LB = 6
 PLATE_KG = (PLATE_LB / 2.20462) / 4
+G = 9.8
 
 
 
@@ -153,13 +150,16 @@ fig, ax = plt.subplots(
 wt, st = [], []
 i = 2
 
+
+
+
 for theta in x:
     active = minmax[i][0] <= theta <= minmax[i][1]
     weights, lengths = motor_loads(active)
 
     moments = np.sum(weights * lengths, axis=1)
     wt.append(moments[i] * G * np.cos(np.deg2rad(theta)) * 1000)
-    st.append(SPRING_K * (theta + (360*extra_winds) +90) * 1000)
+    st.append(SPRING_K * (theta + (360*extra_winds) + spring_angle_offset ) * 1000)
 
 ax.plot(x, np.ones_like(x) * MOTOR_TORQUE * 1000, "k", label="Motor")
 ax.plot(x, -np.ones_like(x) * MOTOR_TORQUE * 1000, "k")

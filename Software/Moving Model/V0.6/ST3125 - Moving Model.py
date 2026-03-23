@@ -170,7 +170,7 @@ for p in range(num_fingers):
     pointers, faces, extents = mesh.vertices, mesh.faces, mesh.extents
     pyvista_poly_dict[f'F{p}M{1}'] = pv.PolyData(pointers, np.hstack([np.full((faces.shape[0], 1), 3), faces]))    
     plotter.add_mesh(pyvista_poly_dict[f'F{p}M{1}'], color=opacity_color, opacity=opacity_stl)
-    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-23.25,0))        # Centers object
+    translate_object(pyvista_poly_dict[f'F{p}M{1}'], (-extents[0]/2,-27.25,0))        # Centers object
     translate_object(pyvista_poly_dict[f'F{p}M{1}'], (Offset_R+4,0,A-33.7))        # Lines up to motor center
     rotate_around_line(pyvista_poly_dict[f'F{p}M{1}'], (0,0,0), (0,0,1), Offset_theta_master[p]) # Sets the position correctly
 
