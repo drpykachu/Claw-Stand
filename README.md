@@ -297,67 +297,55 @@ def solve_thetas(Zp, Yp, Xp, A, B, C, T, Offset_R):
 
 ---
 
-## Part 2: Picking Some Parts.
+## Part 2: Hardware Selection
 
-Here we will discuss the hardware necessary for porting over the mathmatical model to the a real world model. 
+The angles needed for reaching a point in (x,y,z) space is now fully defined with the mathematical model. However, more thought is needed for selecting the hardware for turning the mathematicl model into a working phyiscal model
 
 ---
 ### The Motor:
 
-There are several classes of motor that would work for this project, but servo motors are chosen as the range of movement (<180°), built-in rotary encoder (for position tracking and tuning with PID), and step accuracy (the smaller the better) are too good to pass up for this project. The mathemetical demonstration in the Python Model Implementation section above has the minimum and maximum angles for the motors as:
+There are several classes of motor that were considered, but servo motors are chosen as the range of movement (<180°), built-in rotary encoder (for position tracking and tuning with PID), and step accuracy (the smaller the better) are ideal. Several makes and models of servo motors were evaluated:
 
-| Motor            | Min Angle | Max Angle | Delta Angle|
-|------------------|------|------|------|
-| Top (Motor C)    |  68.4    | 111.5     | 43.1   |
-| Middle (Motor B) |  20.8    |  77.1    |  56.1   |
-| Bottom (Motor A) |  87.8    |  109.7    |  21.9  |
+* [S8218 High Speed servo](https://www.cysmodel.com/products/cys-s8218-40kg-digital-metal-gear-servo/)
+* [SC09 Series Serial Bus Servo](https://www.waveshare.com/SC09-Servo.htm)
+* [ST3215 Series Serial Bus Servo](https://www.waveshare.com/st3215-servo.htm?srsltid=AfmBOorEyoYq279kdzu4ZvWRVoV5O3Idv0StNNJXvp_PE0Ioi92Gx9X2)
 
-I've used the [Waveshare 2.3kg Serial Bus Servo](https://www.waveshare.com/sc09-servo.htm) from Waveshare in the past with much success. Plus, these motors have a serial interface which allows them to be easily controlled by a Raspberry Pi, which I will also be using for the logic-processing aspect of this project.
 
-### The Waveshare 2.3kg Serial Bus Servo Motor
+### Servo Motor Criteria
 
-These things pack quite a punch for their small size. The aspects we really care about for this project are:
+The three most important criteria for the servo motors to ensure a success build are as follows:
 
-| Specification                                     | Impact |
-|---------------------------------------------------|--------|
-| Dimensions: 23.2 × 12.0 × 25.5 mm                 | Positioning       |
-| Position Sensor Resolution: 0.293° (300° / 1024)  | Positioning       |
-| Gear Type: High-precision metal gear              | Positioning       |
-| Max Locked-Rotor Torque: 2.3 kg·cm @ 6 V          | Torque Calculation       |
-| Rated Torque: 0.7 kg·cm @ 6 V                     | Torque Calculation       |
-| No-load Speed: 0.1 s / 60° (≈ 100 RPM) @ 6 V      | Torque Calculation       |
-| Operating Voltage: 4.8 – 8.4 V                    | Power Supply Selection       |  
-| No-load Current: 150 mA @ 6 V                     | Power Supply Selection       |
-| Locked-Rotor Current (Stall): 1.0 A               | Power Supply Selection       |
+1. Small step angle (as well as compact)
+2. Strength requirement (to hold at least coffee mug)
 
-### Positioning:
+#### Step Angle
 
-#### Dimensions:
-
-Using the provided information of the motor sizes (23.2 × 12.0 × 25.5 mm), the Ball-And-Stick (BAS) model can be adjusted to reflect how these motors would behave. I used a CAD modeling software to create motor holders and joints to simulate how it would behave in real life. This is also a good sanity check to get $R_{offset}$, path height, and path radius to ensure the fingers don't crash into each other:
-
-#### Position Sensor Resolution:
-
-The BAS model has the oversight of showing us how the model would react with perfect decimal-point accuracy. In the real world, motors have an angle, the step angle or resolution angle, of how small they can exert movement in discrete steps. For instance, a large step can lead to unwanted behavior. Here is the model with a 2° step (notice the choppiness and inaccurate positioning on the the wanted path):
+The Ball-And-Stick model has the oversight of showing us how the model would react with perfect decimal-point accuracy. In the real world, motors have an angle, the step angle or resolution angle, of how small they can exert movement in discrete steps. For instance, a large step can lead to unwanted behavior. A Computer Aided Design (CAD) was built for the SC09 motors, where the components were designed in mind for 3D printing later on. The model with a 2° step is seen here (notice the choppiness and inaccurate positioning on the the wanted path):
 
 <div align="center">
   <img src="assets/Actual Claw Big Step.gif" alt="Actual Model 2°" />
 </div>
 
-
-
 <br>
 
-Luckily, the Waveshare 2.3kg Serial Bus Servo Motor utilizes a gearbox to obtain a step size of 0.293°:
+Choppiness and innacuracy of the fingers is seen, indicating that there will be poor movement and stability. A smaller step angle is needed to ensure smooth control. 
 
-<div align="center">
-  <img src="assets/Actual Claw.gif" alt="Actual Model" />
-</div>
+The smallest step angle size and  10x step angle size (closer to actual movement due to internal deadband settings), is seen for each motor below:
+
+| Make    | Min Step Size  | Acutal Step Size | 
+|---------|----------------|------------------|
+| S8218   |      0.360     |      3.60        |
+| SC09    |      0.293     |      2.93        | 
+| ST3215  |      0.088     |      0.88        |
+
+A CAD model for the ST3215 was to show the operation for a 0.88° step angle, where much better control smoothness is observed:
 
 
-#### Gear Type:
 
-Uh-oh..... "High-precision metal gear"..... "Gearbox".... that's not good. Gearboxes are good for increasing torque and increasing position resolution, but they are bad because they introduce *backlash*. Backlash is the clearance or lost motion in a mechanism caused by gaps between the parts. If there was no clearance between the gears, any anamoly would cause the gearbox to seize - causing lack or no motion and potential motor failure; so some backlash is desired. However, backlash in this system means that the rotor can move without the output shaft moving, causing a displacement between the modeled position and the actual position (*bad*).
+The S8218 and SC09 motors were no longer considered as they show poor control for this configuration.
+
+#### Strength Requirement
+The ST3215 achieves its positional accuracy by using a gearbox. Gearboxes are good for increasing torque (strength) and increasing position resolution, but they are bad because they introduce *backlash*. Backlash is the clearance or lost motion in a mechanism caused by gaps between the parts. If there was no clearance between the gears, any anamoly would cause the gearbox to seize - causing lack or no motion and potential motor failure; so some backlash is desired. However, backlash in this system means that the rotor can move without the output shaft moving, causing a displacement between the modeled position and the actual position (*bad*).
 
 Here is a picture depicting backlash:
 
@@ -365,68 +353,39 @@ Here is a picture depicting backlash:
   <img src="assets/Backlash.png" alt="Backlash" />
 </div>
 
-See how one side of the teeth is engaged? We can use this to our advantage. Looking at bottom motor (Motor A) for example, we know that the gravity will pull the gearings to one side, until 90 degrees, where it will slop over to the other side. Assigning positive torque to a clockwise direction (and thus a negative torque is counter clockwise), we can deduce this diagram by finding the moment associated for each motor, where the moment is described as:
+Only one side of the gear teeth is engaged at a time. Once the gears spin the other direction, there will be a moment in time (and space) where the contact has to shift from one side to the other. However, if a sufficient amount of external torque is applied, one side of the gear will be engaged at all times - and therefore eliminating backlash.
 
-$$\tau = \sum_{i=1}^{n} l_i·m_i·g·cos(\theta); $$
+Looking at bottom motor (Motor A) for example, gravity will pull the gearings to one side, until 90 degrees, where it will slop over to the other side. Assigning positive torque to a clockwise direction (and thus a negative torque is counter clockwise), the moment ($\tau$) associated for each motor is found as:
 
-$$\tau_C = [T(m_{plastic,T})]·g·cos(\theta)$$
+$$\tau = \sum_{i=1}^{n} l_i·m_i·g·cos(\theta) + l_L·m_L·g·cos(\theta); $$
 
-$$\tau_B = [T(m_{plastic,T}) + (T+C)(m_{plastic}+m_{motor})]·g·cos(\theta) $$
+$$\tau_C = [T·(m_{p,T})]·g·cos(\theta) + T·m_L·g·cos(\theta)$$
 
-$$\tau_B = [T(m_{plastic,T}) + (T+C)(m_{plastic}+m_{motor}) + (T+C+B)(m_{plastic}+m_{motor})]·g·cos(\theta) $$
+$$\tau_B = [T·(m_{p,T}) + (T+C)·(m_{p,T}+m_{p,C}+m_{m})]·g·cos(\theta) + (T+C)·m_L·g·cos(\theta)$$
+
+$$\tau_A = [T·(m_{p,T}) + (T+C)·(m_{p,T}+m_{p,C}+m_{m}) + (T+C+B)·(m_{p,T}+m_{p,C}+m_{p,B}+ 2m_{m})]·g·cos(\theta) + (T+C+B)·m_L·g·cos(\theta) $$
+
+where $l_i$ is arm length, $l_L$ is load length, $m_{p}$ is mass of plastic, $m_{m}$ is mass of motor, $m_{L}$ is mass of load, and $g$ is gravity. Note that the moments $\tau_B$ and $\tau_A$ are taken as worst-case scenarios of the finger being fully extended.
+
+The torque vs. angle behavior, where the load is only applied during contact with the plate,
+is seen here: 
+
 
 <div align="center">
   <img src="assets/Torque_Raw.png" alt="Torque_Raw" />
 </div>
 
-To have the gears stay on one side, we will need to impose a torque associated with angle. Luckily, torsion springs are able to do so, with their torque equation is described as:
+My father chimed in at this point to point out that the torque measurment only needs to be considered for motors that have angles cross the 90° mark. This agrees with the point that as long there is no change in sign (+/-) of torque, there is no switch over from one gearing side to the other. Thus, motors C and B are removed from further analysis.
+
+
+An additional torque will be needed to have the gears stay on one side for motor A. A torsion spring will be added to raise the torqe as a function of the angle, with the relationship seen as:
 
 $$\tau_S = K_s\theta$$
 
-We can increase the torque with the angle moved (assuming a 270° spring deflection) so that it preloads the gears when we get passed 90°, as such with a $K_S$ of 1.4 in·lbf/degree:
+The torque increased with the angle moved (assuming a 270° spring deflection) so that the gears are preloaded the angle reaches 90°. The torque behavior with the added spring is seen as:
 
 <div align="center">
   <img src="assets/Torque_Spring.png" alt="Torque_Spring" />
 </div>
 
-However, we must now check that the combined torque of the spring and the weight do not exceed the torque the motor can generate.
-
-### Torque Calculation:
-
-With the Waveshare SC09 servo rated at 0.7 kg·cm (≈ 68.6 mN·m) of torque at 6 V and a stall torque of 2.3 kg·cm (≈ 225.5 mN·m), achieving a torque of 1.3 mN·m is easily within the operating range. Since 1.3 mN·m is only about 0.013 kg·cm, it represents less than 2 % of the rated torque at 6 V. 
-
-In practice, torque generated by the servo increases with higher applied voltage up to its specified limit, so operating at the full 6 V supply ensures we have a large torque margin above 1.3 mN·m even under load. Additionally, torque and speed are inversely related in hobby servos: as torque demand rises (closer to the stall torque), speed drops, so if your application requires maintaining torque above 1.3 mN·m under heavier loads, we should expect slower movement than the no-load speed of ~0.1 s/60° (≈100 RPM) at 6 V. So, lets assume that these motors can generate ~1.3 mN·m of torque and apply that to our diagram:
-
-<div align="center">
-  <img src="assets/Torque_Total.png" alt="Torque_Total" />
-</div>
-
-However, we forgot to include the load in our calculation. Right now, the diagram shows the only the torque associated with moving the finger itself, but we want to rotate and object and the plate as well. 
-
-Bringing back this table:
-
-| Motor            | Min Angle | Max Angle | Delta Angle|
-|------------------|------|------|------|
-| Top (Motor C)    |  68.4    | 111.5     | 43.1   |
-| Middle (Motor B) |  20.8    |  77.1    |  56.1   |
-| Bottom (Motor A) |  87.8    |  109.7    |  21.9  |
-
-and adding the moment associated with a load to our torque calculations
-
-$$\tau_{C,load} = [T(m_{load})]·g·cos(\theta)$$
-
-$$\tau_{B,load} = [(C+T)(m_{load})]·g·cos(\theta)$$
-
-$$\tau_{A,load} = [(B+C+T)(m_{load})]·g·cos(\theta)$$
-
-we can predict the true behavior of the model (assuming a 0.5 lb load):
-
-
-<div align="center">
-  <img src="assets/Torque_Load.png" alt="Torque_Load" />
-</div>
-
-<br>
-
-
-A half a pound is not a whole-lot of weight. But remember, these motors are small, and the entire claw is less than 7 inches in height, so it's pretty dang small. I'm surprised the math even works out that well in the first place. This model will serve as a proof of concept, with a bigger model with bigger (and more powerful) motors can be developed in the future.
+The torque is now brought to one side (positive) and remains there for all angles - ensuring that the gears are continuously in contact. Motors A, B, and C are now fully defined

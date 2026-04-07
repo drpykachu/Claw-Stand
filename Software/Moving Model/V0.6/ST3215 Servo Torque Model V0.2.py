@@ -140,75 +140,78 @@ titles = ["Top Motor (C)", "Middle Motor (B)", "Bottom Motor (A)"]
 ##################### Plotting
 
 fig, ax = plt.subplots(
-    1, 1, sharex=True, sharey=True,
+    1, 3, sharex=True, sharey=True,
     figsize=(6, 3),
     constrained_layout=True
 )
 
 
 
-wt, st = [], []
-i = 2
+
+for i in range(0,3):
+    wt, st = [], []
 
 
+    for theta in x:
+        active = minmax[i][0] <= theta <= minmax[i][1]
+        weights, lengths = motor_loads(active)
 
+        moments = np.sum(weights * lengths, axis=1)
+        wt.append(moments[i] * G * np.cos(np.deg2rad(theta)) * 1000)
+        st.append(SPRING_K * (theta + (360*extra_winds) + spring_angle_offset ) * 1000)
 
-for theta in x:
-    active = minmax[i][0] <= theta <= minmax[i][1]
-    weights, lengths = motor_loads(active)
+    ##### Plot 1
+    save_text = "Torque_Raw.png"
+    ax[i].plot(x, wt, "b", alpha=1, label="Weight")
+    ax[i].plot(x, np.ones_like(x) * MOTOR_TORQUE * 1000, "k", label="Motor")
+    ax[i].plot(x, -np.ones_like(x) * MOTOR_TORQUE * 1000, "k")
+    ax[i].axhline(0, color="k", linestyle="dotted", alpha=0.5)
+    ax[i].axvline(90, color="k", linestyle="dotted", alpha=0.5)
 
-    moments = np.sum(weights * lengths, axis=1)
-    wt.append(moments[i] * G * np.cos(np.deg2rad(theta)) * 1000)
-    st.append(SPRING_K * (theta + (360*extra_winds) + spring_angle_offset ) * 1000)
-
-ax.plot(x, np.ones_like(x) * MOTOR_TORQUE * 1000, "k", label="Motor")
-ax.plot(x, -np.ones_like(x) * MOTOR_TORQUE * 1000, "k")
-ax.plot(x, wt, "b", alpha=0.3, label="Weight")
-ax.plot(x, st, "r", alpha=0.3, label="Spring")
-ax.plot(x, np.array(wt) + np.array(st), "m", label="Total")
-ax.axhline(0, color="k", linestyle="dotted", alpha=0.5)
-
-ax.add_patch(
-    patches.Rectangle(
-        (minmax[i][0], 0),
-        minmax[i][1] - minmax[i][0],
-        MOTOR_TORQUE * 1000,
-        alpha=0.5,
-        color="tab:orange",
-        label = 'Load',
+    ax[i].add_patch(
+        patches.Rectangle(
+            (minmax[i][0], 0),
+            minmax[i][1] - minmax[i][0],
+            MOTOR_TORQUE * 1000,
+            alpha=0.5,
+            color="tab:orange",
+            label = 'Load',
+        )
     )
-)
-
-ax.text(0.05, 0.1, '%.1f lb Load \nKs: 7.5 in·lbf' % PLATE_LB, transform=ax.transAxes, fontsize=9)
-ax.text(0.05, 0.9, titles[i], transform=ax.transAxes, fontsize=9)
-ax.set_xlim(-0, 180)
-ax.set_xticks(range(-0,136,45))
-#         ax.set_ylim(-200, 200)
-ax.xaxis.set_minor_locator(AutoMinorLocator(3))
-ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-ax.tick_params(axis='both',
-               which='both',
-               direction='in',)    
-
-ax.set_xlabel(r"Theta / $\theta$")
-
-
-
-ax.set_ylabel("Torque / mN·m")
-
-ax.legend(loc = 4,
-              ncol = 2,
-              columnspacing=0.5,
-              handletextpad=0.2,
-              fontsize = 8.5,
-              handlelength = 1,
-              facecolor = 'w',
-              framealpha = 1,
-              fancybox = False)
-
-save_text = "Torque_Spring.png"
     
-plt.savefig(r'C:\Users\antho\Documents\GitHub\Claw-Stand\assets\\' + save_text)
-plt.show()
+    ##### Plot 2
+#     ax[i].plot(x, st, "r", alpha=0.3, label="Spring")
+#     ax[i].plot(x, np.array(wt) + np.array(st), "m", label="Total")
+# 
 
+
+    ax[i].text(0.05, 0.1, r'%.1f lb' % PLATE_LB, transform=ax[i].transAxes, fontsize=9)
+    ax[i].text(0.05, 0.9, titles[i], transform=ax[i].transAxes, fontsize=9)
+    ax[i].set_xlim(-0, 180)
+
+    ax[i].set_xticks(range(-0,136,45))
+    #         ax.set_ylim(-200, 200)
+    ax[i].xaxis.set_minor_locator(AutoMinorLocator(3))
+    ax[i].yaxis.set_minor_locator(AutoMinorLocator(2))
+    ax[i].tick_params(axis='both',
+                   which='both',
+                   direction='in',)    
+
+    ax[i].set_xlabel(r"Theta / $\theta$")
+
+
+
+    ax[i].set_ylabel("Torque / mN·m")
+
+    ax[0].legend(loc = 4,
+                  ncol = 1,
+                  columnspacing=0.5,
+                  handletextpad=0.2,
+                  fontsize = 8.5,
+                  handlelength = 1,
+                  facecolor = 'w',
+                  framealpha = 1,
+                  fancybox = False)
+
+plt.savefig(r'C:\Users\antho\Documents\GitHub\Claw-Stand\assets\\' + save_text)
 plt.show()
