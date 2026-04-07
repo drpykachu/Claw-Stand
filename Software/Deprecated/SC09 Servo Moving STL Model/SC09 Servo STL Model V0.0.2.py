@@ -34,8 +34,8 @@ H_tar       = 160  # Height of target circle path
 delta_Z     = 20   # Dropping from path for reset 
 points      = 100  # Number of points for path
 
-minstep     = 300/1023*10    # stepper motor step angle
-speed       = 20   # Animation speed
+minstep     = 2    # stepper motor step angle
+speed       = 200   # Animation speed
 
 
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -49,30 +49,30 @@ master_path_load = np.concatenate((np.ones((num_fingers,1,path_load)), np.zeros(
 
 ############# PATTERNS #############
 # # ROLLING PATTERN SHIFT
-# for i in range(num_fingers):
-#     """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
-#     shifter = int(points / (num_fingers) * i)
-#     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
-#     master_path[i] = shifted
+for i in range(num_fingers):
+    """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+    shifter = int(points / (num_fingers) * i)
+    shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+    master_path[i] = shifted
 
 
 
 # STAR PATTERN SHIFT (e.g. 1→3→5→2→4 for 5 fingers)
 # Uses modular stepping to assign shifts in a star order instead of sequential order
 
-step = 2                      # star step (works for odd num_fingers)
-spacing = int(points / num_fingers)
-
-order = []
-current = 0
-while current not in order:
-    order.append(current)
-    current = (current + step) % num_fingers
-
-for shift_idx, finger_idx in enumerate(order):
-    shifter = spacing * shift_idx
-    shifted = np.roll(fingertip_path, shift=shifter, axis=1)
-    master_path[finger_idx] = shifted
+# step = 2                      # star step (works for odd num_fingers)
+# spacing = int(points / num_fingers)
+# 
+# order = []
+# current = 0
+# while current not in order:
+#     order.append(current)
+#     current = (current + step) % num_fingers
+# 
+# for shift_idx, finger_idx in enumerate(order):
+#     shifter = spacing * shift_idx
+#     shifted = np.roll(fingertip_path, shift=shifter, axis=1)
+#     master_path[finger_idx] = shifted
 ######################################
 
 # Plot Settings

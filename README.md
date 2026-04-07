@@ -10,7 +10,7 @@ This project is inspired by the **BattleBots claw stand robot**:
 
 ---
 
-## Part 1: Doing Some Math
+## Part 1: Mathematical Model
 
 Each finger in the claw contains **3 motors** — **Motor A**, **Motor B**, and **Motor C**.  
 Each motor rotates by an angle:  
@@ -318,12 +318,12 @@ The three most important criteria for the servo motors to ensure a success build
 1. Small step angle (as well as compact)
 2. Strength requirement (to hold at least coffee mug)
 
-#### Step Angle
+### Step Angle
 
 The Ball-And-Stick model has the oversight of showing us how the model would react with perfect decimal-point accuracy. In the real world, motors have an angle, the step angle or resolution angle, of how small they can exert movement in discrete steps. For instance, a large step can lead to unwanted behavior. A Computer Aided Design (CAD) was built for the SC09 motors, where the components were designed in mind for 3D printing later on. The model with a 2° step is seen here (notice the choppiness and inaccurate positioning on the the wanted path):
 
-<div align="center">
-  <img src="assets/Actual Claw Big Step.gif" alt="Actual Model 2°" />
+<div style="display: flex; justify-content: center;">
+  <img src="assets/SC09.gif" alt="ST3215 CAD" style="max-width: 50%; height: auto;" />
 </div>
 
 <br>
@@ -341,10 +341,15 @@ The smallest step angle size and  10x step angle size (closer to actual movement
 A CAD model for the ST3215 was to show the operation for a 0.88° step angle, where much better control smoothness is observed:
 
 
+<div style="display: flex; justify-content: center;">
+  <img src="assets/ST3215.gif" alt="ST3215 CAD" style="max-width: 50%; height: auto;" />
+</div>
+
+
 
 The S8218 and SC09 motors were no longer considered as they show poor control for this configuration.
 
-#### Strength Requirement
+### Strength Requirement
 The ST3215 achieves its positional accuracy by using a gearbox. Gearboxes are good for increasing torque (strength) and increasing position resolution, but they are bad because they introduce *backlash*. Backlash is the clearance or lost motion in a mechanism caused by gaps between the parts. If there was no clearance between the gears, any anamoly would cause the gearbox to seize - causing lack or no motion and potential motor failure; so some backlash is desired. However, backlash in this system means that the rotor can move without the output shaft moving, causing a displacement between the modeled position and the actual position (*bad*).
 
 Here is a picture depicting backlash:
@@ -388,4 +393,23 @@ The torque increased with the angle moved (assuming a 270° spring deflection) s
   <img src="assets/Torque_Spring.png" alt="Torque_Spring" />
 </div>
 
-The torque is now brought to one side (positive) and remains there for all angles - ensuring that the gears are continuously in contact. Motors A, B, and C are now fully defined
+The torque is now brought to one side (positive) and remains there for all angles - ensuring that the gears are continuously in contact. Motors A, B, and C are now fully defined. The final model to include the spring hardware (near the bottom, as only motor A needs it) is seen here:
+
+<div style="display: flex; justify-content: center;">
+  <img src="assets/ST3215_Spring.gif" alt="ST3215 CAD" style="max-width: 50%; height: auto;" />
+</div>
+
+## Part 3: Final Build And Considerations
+
+The translation from theoretical model, to CAD model, to 3D printing and fine-tuning took a considerable amount of time. The considerations for electronics, wiring, polishing, machining, soldering, and coding are not shown here, simply because it is not worth the time and effort type of out the explanations for each aspect. Rather, I wanted to share the aspects to which I thought were the coolest, and I hope you enjoy them as well.
+
+### Camera-Plate Feedback Loop
+
+### LED Ring
+
+### Electronics Bay
+
+### Spring Slots
+
+### Gallery
+
