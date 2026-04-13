@@ -207,11 +207,6 @@ for i in range(points):
         print('\033[91m EXITING - not all points in path have a solution.\033[0m')
         sys.exit(1)
 
-
-# print(round(np.rad2deg(max(minmax_a) - min(minmax_a))/minstep))
-# print(round(np.rad2deg(max(minmax_b) - min(minmax_b))/minstep))
-# print(round(np.rad2deg(max(minmax_c) - min(minmax_c))/minstep))
-
 camera_distance(plotter, distance = 1000)
 
 
