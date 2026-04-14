@@ -190,6 +190,12 @@ def circle(r, h, degree):
     x = r * np.cos(np.deg2rad(degree))
     return [x, y, z]
 
+def circle_origin(r, h, degree, origin = [0,0]):
+    """Return (x, y, z) coordinates of a circular trajectory."""
+    z = h
+    y = r * np.sin(np.deg2rad(degree)) + origin[1]
+    x = r * np.cos(np.deg2rad(degree)) + origin[0]
+    return [x, y, z]
 
 def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     """Builds the path for the fingertip travel."""
@@ -212,9 +218,9 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     top_path[2] = np.ones(len(top_path[0]))*top_path[2]
     
     # building bottom path
-    linearspace = np.linspace(0, 1, int(point_lower/2))
-    expospace = linearspace**0.5
-    expospace = np.concatenate((np.flip(expospace),-expospace))
+#     linearspace = np.linspace(0, 1, int(point_lower/2))
+#     expospace = linearspace**0.5
+#     expospace = np.concatenate((np.flip(expospace),-expospace))
 #     bot_path_circ = circle(R_tar, H_tar, -360/num_fingers_p1/2*expospace)    # for exponential spacing
     bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
 

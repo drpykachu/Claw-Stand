@@ -212,8 +212,7 @@ camera_distance(plotter, distance = 1000)
 
 
 
-val_anim = 0
-val_fix = 0
+
 # ============================================================ Collision ============================================================
 
     
@@ -241,16 +240,17 @@ correction_circle_actor = plotter.add_mesh(correction_circle_poly, color='k', po
 
 # Generates path
 fixing_path_points_1 = 20
+fixing_path_points_2 = points
 
 def fixing_animate():
     global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
     
-    if val_fix == fixing_path_points_1:
+    if val_fix == fixing_path_points_1 + fixing_path_points_2:
         fixing = False
         val_fix = 0
         print('done!')
     
-    # Finds last known point
+    ### Finds last known point - but will be set to when points = 0 for ease
     if fixing_finder == True:
         correction_distance = error_distance 
         correction_angle = 180  +  error_angle
@@ -266,9 +266,8 @@ def fixing_animate():
             last_point[k] = [Xtar, Ytar,Ztar]
         fixing_finder = False
     
-    #### Pathing 
+    #### Pathing 1 - setup
     fixing_path_1 = np.zeros((num_fingers,3,fixing_path_points_1))
-    
     for k in range(num_fingers):            
         ### Path 1 all fingers moving together
         # since we are rotating the points around [0,0], we need to adjust to make it translational motion, not rotational         
@@ -287,7 +286,6 @@ def fixing_animate():
         fixing_path_1[k][1] = np.linspace(start_point_y,end_point_y,fixing_path_points_1)
         fixing_path_1[k][2] = np.ones(fixing_path_points_1)*last_point[k][2]
         
-    
     #### Pathing 1 - Execution
     if val_fix < fixing_path_points_1:
 
@@ -304,19 +302,80 @@ def fixing_animate():
            # Actors
             for j in range(6):        
                 pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
-            
             pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
                 
-            master_path_plot = rotate_vector(master_path[k], Offset_theta)
-            pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
+
+    #### Pathing 2 - adjusted circle
+           
+    # Builds new path
+    def pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle):
+        """Builds the path for the fingertip travel on an adjusted path."""
+       
+        exponent = 4
+        num_fingers_p1 = num_fingers + 1
+        
+        # distributing points
+        point_upper = int(points/num_fingers*(num_fingers-1))
+        point_lower = int(points/num_fingers)
+
+        # Top path
+        top_path = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
+#         top_path = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper),[0,0])
+        top_path[2] = np.ones(len(top_path[0]))*top_path[2]
+        
+        # Bottom path
+        bot_path_circ = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])     # for linear spacing
+#         bot_path_circ = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower),[0,0])     # for linear spacing
+        bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
+        bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
+         
+        total_path = np.concatenate((top_path, bot_path), axis=1)         
+        
+        return total_path
     
+    # Plots new circle to follow until reset
+    circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
+    circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
+    plotter.add_lines(circ_fix_points, width=3, color='red')     
+    
+    
+    
+    
+    fingertip_fix = pathing_fix(fixing_path_points_2, delta_Z,num_fingers,R_tar, H_tar,  error_distance, correction_angle)
+    master_fix = patterns('Roll',num_fingers, fixing_path_points_2,fingertip_fix)    
+    
+    if val_fix >= fixing_path_points_1:
+        for k in range(num_fingers):
+            Xtar_fix, Ytar_fix, Ztar_fix = master_fix[k, :, int(val_fix-fixing_path_points_1)]
+
+            #### HERE
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], Offset_theta )
+            Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle))
+            Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta )
+            
+            theta_reals = solve_thetas(Ztar_fix, Ytar_fix, Xtar_fix, A, A_x, B, C, T,Offset_R)[0]
+            theta_a = theta_reals[0]
+            theta_b = theta_reals[1]
+            theta_c = theta_reals[2]
+
+            Offset_theta = Offset_theta_master[k]
+            coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
+            coords = rotate_vector(coords_unr, Offset_theta)
+#             coords = coords_unr
+            
+           # Actors
+            for j in range(6):        
+                pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
+            pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
+        
+            
     val_fix += 1
     
-# circle_tar = circle(R_tar, H_tar, np.linspace(0, 359, points))        # Builds target circle
-# fingertip_path = pathing(points, delta_Z,num_fingers,R_tar, H_tar)    # Builds a fingertip path
-# master_path = patterns('Roll',num_fingers, points,fingertip_path)
 
 
+val_anim = points - 5
+val_fix = 0
 def animate():
     global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
 
@@ -328,7 +387,7 @@ def animate():
     if fixing == False:
 
         # Temporary = for fixing simulation
-        if val_anim == 5:
+        if val_anim == points:
             fixing = True
             fixing_finder = True
 
