@@ -241,12 +241,11 @@ correction_circle_actor = plotter.add_mesh(correction_circle_poly, color='k', po
 
 # Generates path
 fixing_path_points_1 = 20
-fixing_path_points_2 = 20
 
 def fixing_animate():
     global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
     
-    if val_fix == fixing_path_points_1 + fixing_path_points_2*num_fingers:
+    if val_fix == fixing_path_points_1:
         fixing = False
         val_fix = 0
         print('done!')
@@ -266,15 +265,9 @@ def fixing_animate():
             Xtar, Ytar, Ztar = master_path[k, :, int(val_anim)] 
             last_point[k] = [Xtar, Ytar,Ztar]
         fixing_finder = False
-
-    # First, lets bring the lower finger up to the plate
-    for k in range(num_fingers):
-        if last_point[k][2] != H_tar:
-            last_point[k][2] = H_tar
     
     #### Pathing 
     fixing_path_1 = np.zeros((num_fingers,3,fixing_path_points_1))
-    fixing_path_2 = np.zeros((num_fingers,3,fixing_path_points_2))
     
     for k in range(num_fingers):            
         ### Path 1 all fingers moving together
@@ -294,33 +287,6 @@ def fixing_animate():
         fixing_path_1[k][1] = np.linspace(start_point_y,end_point_y,fixing_path_points_1)
         fixing_path_1[k][2] = np.ones(fixing_path_points_1)*last_point[k][2]
         
-        ### Path 2 one finger at a time
-        start_point_x = end_point_x
-        start_point_y = end_point_y
-        
-        end_point_x = last_point[k][0]
-        end_point_y = last_point[k][1]   
-
-        delta_Z_f = 10
-        exponent_f = 2
-        
-        linearspace = np.linspace(0, 1, int(fixing_path_points_2/2))
-        expospace = linearspace**1
-        expospace = np.concatenate((np.flip(expospace),-expospace))
-        
-        if last_point[k][2] < H_tar:
-            delta_Z_f = 0
-        fixing_path_2[k][0] = np.linspace(start_point_x,end_point_x,fixing_path_points_1)
-        fixing_path_2[k][1] = np.linspace(start_point_y,end_point_y,fixing_path_points_1)
-        fixing_path_2[k][2] = delta_Z_f*np.flip(expospace)**exponent_f / np.max(expospace**exponent_f)  + (last_point[k][2] - delta_Z_f)           
-        
-    # need to multply it by num_fingers and offset it, to make sure they go one at a time
-    fixing_path_2_real = np.zeros((num_fingers,3,fixing_path_points_2*num_fingers))
-    for k in range(num_fingers):    
-        fixing_path_2_real[k][0] = [fixing_path_2[k][0][0]]*fixing_path_points_2*k + list(fixing_path_2[k][0]) + [fixing_path_2[k][0][-1]]*fixing_path_points_2*(num_fingers - k - 1)
-        fixing_path_2_real[k][1] = [fixing_path_2[k][1][0]]*fixing_path_points_2*k + list(fixing_path_2[k][1]) + [fixing_path_2[k][1][-1]]*fixing_path_points_2*(num_fingers - k - 1)
-        fixing_path_2_real[k][2] = [fixing_path_2[k][2][0]]*fixing_path_points_2*k + list(fixing_path_2[k][2]) + [fixing_path_2[k][2][-1]]*fixing_path_points_2*(num_fingers - k - 1)
-
     
     #### Pathing 1 - Execution
     if val_fix < fixing_path_points_1:
@@ -344,27 +310,11 @@ def fixing_animate():
             master_path_plot = rotate_vector(master_path[k], Offset_theta)
             pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
     
-    #### Pathing 2 - Execution
-    if val_fix >= fixing_path_points_1:
-        for k in range(num_fingers):
-            theta_reals = solve_thetas(fixing_path_2_real[k][2][val_fix - fixing_path_points_1], fixing_path_2_real[k][1][val_fix - fixing_path_points_1], fixing_path_2_real[k][0][val_fix - fixing_path_points_1], A, A_x, B, C, T,Offset_R)[0]
-            theta_a = theta_reals[0]
-            theta_b = theta_reals[1]
-            theta_c = theta_reals[2]
-
-            Offset_theta = Offset_theta_master[k]
-            coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
-            coords = rotate_vector(coords_unr, Offset_theta)
-            
-           # Actors
-            for j in range(6):        
-                pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
-            
-            pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
-                
-            master_path_plot = rotate_vector(master_path[k], Offset_theta)
-            pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
-        
+    val_fix += 1
+    
+# circle_tar = circle(R_tar, H_tar, np.linspace(0, 359, points))        # Builds target circle
+# fingertip_path = pathing(points, delta_Z,num_fingers,R_tar, H_tar)    # Builds a fingertip path
+# master_path = patterns('Roll',num_fingers, points,fingertip_path)
 
 
 def animate():
@@ -373,7 +323,6 @@ def animate():
     #### Fixing Operation
     if fixing == True:
         fixing_animate()        
-        val_fix +=1
         
     #### Normal Operation
     if fixing == False:
