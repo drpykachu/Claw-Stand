@@ -228,7 +228,7 @@ fixing_finder  = False
 
 # Plotting Correction Circle
 error_distance = 10
-error_angle = 5
+error_angle = 105
 
 correction_circle = circle(error_distance, H_tar, np.linspace(0,359,100))
 correction_circle_points = np.column_stack((correction_circle[0], correction_circle[1], correction_circle[2]*np.ones(len(correction_circle[1]))))
@@ -320,12 +320,12 @@ def fixing_animate():
 
         # Top path
         top_path = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
-#         top_path = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper),[0,0])
+#         top_path = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper))
         top_path[2] = np.ones(len(top_path[0]))*top_path[2]
         
         # Bottom path
         bot_path_circ = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])     # for linear spacing
-#         bot_path_circ = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower),[0,0])     # for linear spacing
+#         bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
         bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
         bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
          
@@ -348,12 +348,15 @@ def fixing_animate():
         for k in range(num_fingers):
             Xtar_fix, Ytar_fix, Ztar_fix = master_fix[k, :, int(val_fix-fixing_path_points_1)]
 
-            #### HERE
-            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], Offset_theta )
-            Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle))
-            Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
-            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta )
+            ############## HERE
             
+#             Xtar_fix, Ytar_fix = rotate_point([0,0], [Xtar_fix, Ytar_fix], Offset_theta)
+#             Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle)) 
+#             Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
+#             Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta)
+#  
+            ##############
+
             theta_reals = solve_thetas(Ztar_fix, Ytar_fix, Xtar_fix, A, A_x, B, C, T,Offset_R)[0]
             theta_a = theta_reals[0]
             theta_b = theta_reals[1]
@@ -362,7 +365,6 @@ def fixing_animate():
             Offset_theta = Offset_theta_master[k]
             coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
             coords = rotate_vector(coords_unr, Offset_theta)
-#             coords = coords_unr
             
            # Actors
             for j in range(6):        
