@@ -309,30 +309,12 @@ def fixing_animate():
            
     # Builds new path
     def pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle):
-        """Builds the path for the fingertip travel on an adjusted path."""
-       
-        exponent = 4
-        num_fingers_p1 = num_fingers + 1
-        
-        # distributing points
-        point_upper = int(points/num_fingers*(num_fingers-1))
-        point_lower = int(points/num_fingers)
 
-        # Top path
-        top_path = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
-#         top_path = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper))
-        top_path[2] = np.ones(len(top_path[0]))*top_path[2]
-        
-        # Bottom path
-        bot_path_circ = circle_origin(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])     # for linear spacing
-#         bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
-        bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
-        bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
-         
-        total_path = np.concatenate((top_path, bot_path), axis=1)         
-        
-        return total_path
-    
+            
+        return 1
+
+
+
     # Plots new circle to follow until reset
     circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
     circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
@@ -347,15 +329,6 @@ def fixing_animate():
     if val_fix >= fixing_path_points_1:
         for k in range(num_fingers):
             Xtar_fix, Ytar_fix, Ztar_fix = master_fix[k, :, int(val_fix-fixing_path_points_1)]
-
-            ############## HERE
-            
-#             Xtar_fix, Ytar_fix = rotate_point([0,0], [Xtar_fix, Ytar_fix], Offset_theta)
-#             Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle)) 
-#             Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
-#             Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta)
-#  
-            ##############
 
             theta_reals = solve_thetas(Ztar_fix, Ytar_fix, Xtar_fix, A, A_x, B, C, T,Offset_R)[0]
             theta_a = theta_reals[0]
