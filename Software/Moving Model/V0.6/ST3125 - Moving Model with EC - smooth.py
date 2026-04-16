@@ -38,8 +38,8 @@ num_fingers = 5
 
 Offset_R    = 65 # From origin (0,0,0)
 
-R_tar       = 80  # Radius of target circle path 
-H_tar       = 190  # Height of target circle path
+R_tar       = 90  # Radius of target circle path 
+H_tar       = 180  # Height of target circle path
 
 minstep    = 360/4096*1
 
@@ -227,8 +227,8 @@ fixing = False
 fixing_finder  = False
 
 # Plotting Correction Circle
-error_distance = 10
-error_angle = 105
+error_distance = 15
+error_angle = 50
 
 correction_circle = circle(error_distance, H_tar, np.linspace(0,359,100))
 correction_circle_points = np.column_stack((correction_circle[0], correction_circle[1], correction_circle[2]*np.ones(len(correction_circle[1]))))
@@ -243,12 +243,11 @@ fixing_path_points_1 = 20
 fixing_path_points_2 = points
 
 def fixing_animate():
-    global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
+    global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta, master_fix
     
     if val_fix == fixing_path_points_1 + fixing_path_points_2:
         fixing = False
         val_fix = 0
-        print('done!')
     
     ### Finds last known point - but will be set to when points = 0 for ease
     if fixing_finder == True:
@@ -264,8 +263,17 @@ def fixing_animate():
         for k in range(num_fingers):
             Xtar, Ytar, Ztar = master_path[k, :, int(val_anim)] 
             last_point[k] = [Xtar, Ytar,Ztar]
+        
+
+        # Builds new path for fixing purposes
+        master_fix = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master)
+        # Plots new circle to follow until reset
+        circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
+        circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
+        plotter.add_lines(circ_fix_points, width=3, color='red')
+        
         fixing_finder = False
-    
+        
     #### Pathing 1 - setup
     fixing_path_1 = np.zeros((num_fingers,3,fixing_path_points_1))
     for k in range(num_fingers):            
@@ -306,30 +314,11 @@ def fixing_animate():
                 
 
     #### Pathing 2 - adjusted circle
-           
-    # Builds new path
-    def pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle):
-
-            
-        return 1
-
-
-
-    # Plots new circle to follow until reset
-    circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
-    circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
-    plotter.add_lines(circ_fix_points, width=3, color='red')     
     
-    
-    
-    
-    fingertip_fix = pathing_fix(fixing_path_points_2, delta_Z,num_fingers,R_tar, H_tar,  error_distance, correction_angle)
-    master_fix = patterns('Roll',num_fingers, fixing_path_points_2,fingertip_fix)    
-    
-    if val_fix >= fixing_path_points_1:
+    if val_fix > fixing_path_points_1:
         for k in range(num_fingers):
             Xtar_fix, Ytar_fix, Ztar_fix = master_fix[k, :, int(val_fix-fixing_path_points_1)]
-
+        
             theta_reals = solve_thetas(Ztar_fix, Ytar_fix, Xtar_fix, A, A_x, B, C, T,Offset_R)[0]
             theta_a = theta_reals[0]
             theta_b = theta_reals[1]

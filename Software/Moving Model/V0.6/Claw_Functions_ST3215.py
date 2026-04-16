@@ -218,10 +218,6 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     top_path[2] = np.ones(len(top_path[0]))*top_path[2]
     
     # building bottom path
-#     linearspace = np.linspace(0, 1, int(point_lower/2))
-#     expospace = linearspace**0.5
-#     expospace = np.concatenate((np.flip(expospace),-expospace))
-#     bot_path_circ = circle(R_tar, H_tar, -360/num_fingers_p1/2*expospace)    # for exponential spacing
     bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
 
 
@@ -232,7 +228,91 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     
     return total_path
 
+def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master):
+    """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
+    
+    #### 1. Generates first sequence - normal top path and bottom path.
+    exponent = 4
+    num_fingers_p1 = num_fingers + 1
 
+    # distributing points
+    point_upper = int(points/num_fingers*(num_fingers-1))
+    point_lower = int(points/num_fingers)
+
+    # building top path
+    top_path = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper))
+    top_path[2] = np.ones(len(top_path[0]))*top_path[2]
+    
+    # building bottom path
+    bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
+    bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
+    bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
+     
+    total_path = np.concatenate((top_path, bot_path), axis=1)    
+    
+    
+    #### 2. Then, it does the rolling of the path to offset per finger
+    master_path = np.ones((num_fingers,3,points))
+    for i in range(num_fingers):
+        """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+        shifter = int(points / (num_fingers) * i)
+        shifted = np.roll(total_path, shift=shifter, axis=1)
+        master_path[i] = shifted
+
+
+    #### 3. Now, lets find the index of where each finger starts its return.
+    bot_index_finder = []
+    for k in range(0,num_fingers):
+        flag = False
+        for q in range(0,len(master_path[k][2])):
+            if master_path[k][2][q] == H_tar:
+                flag = True
+            if flag == True and master_path[k][2][q] < H_tar:
+                bot_index_finder.append(q)
+                break
+    
+    #### 4. Now, lets find the index of where each finger finds its way back from bottom to top            
+    top_index_finder = []
+    for k in range(0,num_fingers):
+        flag = False
+        for q in range(0,len(master_path[k][2])):
+            if master_path[k][2][q] < H_tar:
+                flag = True
+            if flag == True and master_path[k][2][q] == H_tar:
+                top_index_finder.append(q)
+                break
+            
+    #### 5. Now, for all points leading up to the bottom index, let's employ the fix for the new top path
+    for k in range(0,num_fingers):
+        for q in range(0,top_index_finder[k]):        
+            Xtar_fix = master_path[k][0][q]
+            Ytar_fix = master_path[k][1][q]
+        
+            Offset_theta = Offset_theta_master[k]
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], Offset_theta )                             
+            Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle))
+            Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta )
+            
+            master_path[k][0][q] = Xtar_fix
+            master_path[k][1][q] = Ytar_fix
+            
+    
+    #### 6. Now, lets correct the bottom path between the indexes of bottom_index to top_index
+    for k in range(0,num_fingers):            
+        Xtar_fix_start = master_path[k][0][bot_index_finder[k]]
+        Ytar_fix_start = master_path[k][1][bot_index_finder[k]]
+        
+        Xtar_fix_end = master_path[k][0][top_index_finder[k]]
+        Ytar_fix_end = master_path[k][1][top_index_finder[k]]
+        
+        new_path_x = np.linspace(Xtar_fix_start,Xtar_fix_end, abs(top_index_finder[k] - bot_index_finder[k]))
+        new_path_y = np.linspace(Ytar_fix_start,Ytar_fix_end, abs(top_index_finder[k] - bot_index_finder[k]))
+        master_path[k][0][min(bot_index_finder[k],top_index_finder[k]):max(bot_index_finder[k],top_index_finder[k])] = new_path_x
+        master_path[k][1][min(bot_index_finder[k],top_index_finder[k]):max(bot_index_finder[k],top_index_finder[k])] = new_path_y
+            
+    return master_path
+        
 def rotate_point(origin, point, degree):
     ox, oy = origin
     px, py = point
