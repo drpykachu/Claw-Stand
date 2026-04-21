@@ -70,12 +70,12 @@ main_window.setCentralWidget(plotter)
 
 # Plotting target Circle
 circ_tar_points = np.column_stack((circle_tar[0], circle_tar[1], circle_tar[2]*np.ones(len(circle_tar[1]))))
-plotter.add_lines(circ_tar_points, width=3, color='black')
+plotter.add_lines(circ_tar_points, width=3, color='black', name = 'target circle')
 
 # Plotting Base Circle
 base_circle = circle(Offset_R, 0, np.linspace(0,359,100))
 base_circle_points = np.column_stack((base_circle[0], base_circle[1], base_circle[2]*np.ones(len(base_circle[1]))))
-plotter.add_lines(base_circle_points, width=3, color='blue')
+plotter.add_lines(base_circle_points, width=3, color='blue', name = 'base circle')
 
 # Directional rose
 limits = H_tar
@@ -117,7 +117,9 @@ for p in range(num_fingers):
     pyvista_poly_dict_BAS[f'F{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*6), lines=np.hstack([[6, *range(6)]]))
     pyvista_actor_dict_BAS[f'F{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'F{p}'], color='black', line_width=3)
     pyvista_poly_dict_BAS[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
-    pyvista_actor_dict_BAS[f'P{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'P{p}'], color=path_colors[p], line_width=3)
+    pyvista_actor_dict_BAS[f'P{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'P{p}'], color=path_colors[p], line_width=3,name = f'paths {p}')
+    master_path_plot = rotate_vector(master_path[p], Offset_theta_master[p])
+    pyvista_poly_dict_BAS[f'P{p}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
 
     # Motor A
     mesh = trimesh.load_mesh(stl_path_A) 
@@ -213,7 +215,7 @@ camera_distance(plotter, distance = 1000)
 
 
 
-# ============================================================ Collision ============================================================
+# ============================================================ Execution ============================================================
 
     
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
@@ -234,16 +236,13 @@ correction_circle = circle(error_distance, H_tar, np.linspace(0,359,100))
 correction_circle_points = np.column_stack((correction_circle[0], correction_circle[1], correction_circle[2]*np.ones(len(correction_circle[1]))))
 plotter.add_lines(correction_circle_points, width=3, color='red')
 
-# Plotting Correction Dot
-correction_circle_poly = pv.PolyData([error_distance*np.cos(np.deg2rad(error_angle)), error_distance*np.sin(np.deg2rad(error_angle)), H_tar])
-correction_circle_actor = plotter.add_mesh(correction_circle_poly, color='k', point_size=10, render_points_as_spheres=True)
 
 # Generates path
 fixing_path_points_1 = 20
 fixing_path_points_2 = points
 
 def fixing_animate():
-    global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta, master_fix
+    global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta, master_fix, fixing_path_1
     
     if val_fix == fixing_path_points_1 + fixing_path_points_2:
         fixing = False
@@ -255,84 +254,179 @@ def fixing_animate():
         correction_angle = 180  +  error_angle
         if correction_angle > 360:
             correction_angle = 360 - correction_angle
-
-        correction_circle_poly2 = pv.PolyData([error_distance*np.cos(np.deg2rad(correction_angle)), error_distance*np.sin(np.deg2rad(correction_angle)), H_tar])
-        correction_circle_actor2 = plotter.add_mesh(correction_circle_poly2, color='b', point_size=10, render_points_as_spheres=True)
         
         last_point = np.zeros((num_fingers, 3))
         for k in range(num_fingers):
             Xtar, Ytar, Ztar = master_path[k, :, int(val_anim)] 
             last_point[k] = [Xtar, Ytar,Ztar]
         
+        #### Pathing 1 determination
+        fixing_path_1 = np.zeros((num_fingers,3,fixing_path_points_1))
+        for k in range(num_fingers):            
+            ### Path 1 all fingers moving together
+            # since we are rotating the points around [0,0], we need to adjust to make it translational motion, not rotational         
+            Offset_theta = Offset_theta_master[k]
+            start_point_x = last_point[k][0]
+            start_point_y = last_point[k][1]        
+            start_point_x, start_point_y = rotate_point([0, 0], [start_point_x, start_point_y], Offset_theta )
+                    
+            end_point_x = start_point_x + error_distance*np.cos(np.deg2rad(correction_angle))
+            end_point_y = start_point_y + error_distance*np.sin(np.deg2rad(correction_angle))
+            end_point_x, end_point_y = rotate_point([0, 0], [end_point_x, end_point_y], -Offset_theta )
+            start_point_x, start_point_y = rotate_point([0, 0], [start_point_x, start_point_y], -Offset_theta )
+            
+            # stores it for simuteanous movement            
+            fixing_path_1[k][0] = np.linspace(start_point_x,end_point_x,fixing_path_points_1)
+            fixing_path_1[k][1] = np.linspace(start_point_y,end_point_y,fixing_path_points_1)
+            fixing_path_1[k][2] = np.ones(fixing_path_points_1)*last_point[k][2]
 
-        # Builds new path for fixing purposes
-        master_fix = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master)
-        # Plots new circle to follow until reset
-        circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
-        circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
-        plotter.add_lines(circ_fix_points, width=3, color='red')
+
+        #### Pathing 2 determination
+        fixing_path_2 = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master)
+        
+        # Combines translational and rottation fixing
+        master_fix = np.concatenate((fixing_path_1, fixing_path_2), axis=2)        
+        
+        #### Plots new paths and circle
+        if fixing_finder == True:
+            # Removes old paths and circle
+            plotter.remove_actor('target circle')
+            for k in range(num_fingers):
+                plotter.remove_actor(f'paths {k}')
+                
+            
+            # Plots new circle 
+            circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
+            circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
+            plotter.add_lines(circ_fix_points, width=3, color='red', name='correction circle')
+            
+            # Plots new Paths
+            for k in range(num_fingers):
+                pyvista_poly_dict_BAS[f'P{k}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*(fixing_path_points_1 + fixing_path_points_2)), lines=np.hstack([[(fixing_path_points_1 + fixing_path_points_2), *range((fixing_path_points_1 + fixing_path_points_2))]]))
+                pyvista_actor_dict_BAS[f'P{k}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'P{k}'], color=path_colors[k], line_width=3,name = f'fixer paths {k}')
+                master_path_plot = rotate_vector(master_fix[k], Offset_theta_master[k])
+                pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
         
         fixing_finder = False
         
-    #### Pathing 1 - setup
-    fixing_path_1 = np.zeros((num_fingers,3,fixing_path_points_1))
-    for k in range(num_fingers):            
-        ### Path 1 all fingers moving together
-        # since we are rotating the points around [0,0], we need to adjust to make it translational motion, not rotational         
-        Offset_theta = Offset_theta_master[k]
-        start_point_x = last_point[k][0]
-        start_point_y = last_point[k][1]        
-        start_point_x, start_point_y = rotate_point([0, 0], [start_point_x, start_point_y], Offset_theta )
-                
-        end_point_x = start_point_x + error_distance*np.cos(np.deg2rad(correction_angle))
-        end_point_y = start_point_y + error_distance*np.sin(np.deg2rad(correction_angle))
-        end_point_x, end_point_y = rotate_point([0, 0], [end_point_x, end_point_y], -Offset_theta )
-        start_point_x, start_point_y = rotate_point([0, 0], [start_point_x, start_point_y], -Offset_theta )
         
-        # stores it for simuteanous movement            
-        fixing_path_1[k][0] = np.linspace(start_point_x,end_point_x,fixing_path_points_1)
-        fixing_path_1[k][1] = np.linspace(start_point_y,end_point_y,fixing_path_points_1)
-        fixing_path_1[k][2] = np.ones(fixing_path_points_1)*last_point[k][2]
-        
-    #### Pathing 1 - Execution
-    if val_fix < fixing_path_points_1:
-
+    if fixing == False:
+        # Removes correction paths and circles
+        plotter.remove_actor('correction circle')
         for k in range(num_fingers):
-            theta_reals = solve_thetas(fixing_path_1[k][2][val_fix], fixing_path_1[k][1][val_fix], fixing_path_1[k][0][val_fix], A, A_x, B, C, T,Offset_R)[0]
-            theta_a = theta_reals[0]
-            theta_b = theta_reals[1]
-            theta_c = theta_reals[2]
+            plotter.remove_actor(f'fixer paths {k}')
+        
+        # Adds the old circle back in
+        plotter.add_lines(circ_tar_points, width=3, color='black', name = 'target circle')
+       
+        # Adds the old paths back in
+        for p in range(num_fingers):
+            pyvista_poly_dict_BAS[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
+            pyvista_actor_dict_BAS[f'P{p}'] = plotter.add_mesh(pyvista_poly_dict_BAS[f'P{p}'], color=path_colors[p], line_width=3,name = f'paths {p}')
+            master_path_plot = rotate_vector(master_path[p], Offset_theta_master[p])
+            pyvista_poly_dict_BAS[f'P{p}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
 
-            Offset_theta = Offset_theta_master[k]
-            coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
-            coords = rotate_vector(coords_unr, Offset_theta)
-            
-           # Actors
-            for j in range(6):        
-                pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
-            pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
-                
-
-    #### Pathing 2 - adjusted circle
+        
+        
+    #### New pathing - execution
+    for k in range(num_fingers):
+        Xtar_fix, Ytar_fix, Ztar_fix = master_fix[k, :, int(val_fix)]
     
-    if val_fix > fixing_path_points_1:
-        for k in range(num_fingers):
-            Xtar_fix, Ytar_fix, Ztar_fix = master_fix[k, :, int(val_fix-fixing_path_points_1)]
-        
-            theta_reals = solve_thetas(Ztar_fix, Ytar_fix, Xtar_fix, A, A_x, B, C, T,Offset_R)[0]
-            theta_a = theta_reals[0]
-            theta_b = theta_reals[1]
-            theta_c = theta_reals[2]
+        theta_reals = solve_thetas(Ztar_fix, Ytar_fix, Xtar_fix, A, A_x, B, C, T,Offset_R)[0]
+        theta_a = theta_reals[0]
+        theta_b = theta_reals[1]
+        theta_c = theta_reals[2]
 
-            Offset_theta = Offset_theta_master[k]
-            coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
-            coords = rotate_vector(coords_unr, Offset_theta)
-            
-           # Actors
-            for j in range(6):        
-                pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
-            pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
+        Offset_theta = Offset_theta_master[k]
+        coords_unr = point_coords(theta_a,theta_b,theta_c,Offset_R, A, A_x, B, C, T)
+        coords = rotate_vector(coords_unr, Offset_theta)
         
+        # Finds change in theta
+        delta_theta[:,k] = np.array([theta_a, theta_b, theta_c]) - delta_theta[:,k]
+          
+        
+       ############ Ball and Stick Actors ############
+        for j in range(6):        
+            pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
+        
+        pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
+            
+         
+        ############ Rotates Motor Ax Segment ############
+        # Casts it back to center for easier rotational math
+        rotate_around_line(pyvista_poly_dict[f'F{k}M{1}'], (0,0,0), vector_z, -Offset_theta_master[k]) # Sets the position correctly
+        translate_object(pyvista_poly_dict[f'F{k}M{1}'], (-Offset_R,0,0))        # Lines up to motor center
+
+        if primerB[k] != 0:
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{1}'], point1, vector_x, np.rad2deg(delta_theta[0,k])) # Flips to correct side
+        if primerB[k] == 0:
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{1}'], point1, vector_x, np.rad2deg(theta_a)-90) # Flips to correct side
+            primerB[k] = 1
+            
+        # Sends it back out to desired location for easier rotational math
+        translate_object(pyvista_poly_dict[f'F{k}M{1}'], (Offset_R,0,0))        # Lines up to motor center
+        rotate_around_line(pyvista_poly_dict[f'F{k}M{1}'], (0,0,0), vector_z, Offset_theta_master[k]) # Sets the position correctly
+        
+        ############ Rotates Motor B Segment ############
+        # Casts it back to center for easier rotational math
+        rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], (0,0,0), vector_z, -Offset_theta_master[k]) 
+        translate_object(pyvista_poly_dict[f'F{k}M{2}'], (-(Offset_R+A_x),0,0))
+        
+        if primerC[k] != 0:
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point1, vector_x, -(np.rad2deg(theta_a)-90))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point2, vector_y, -np.rad2deg(delta_theta[1,k]))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point1, vector_x, np.rad2deg(delta_theta[0,k]))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point1, vector_x, np.rad2deg(theta_a)-90)
+            
+        if primerC[k] == 0:
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point2, vector_y, 90-np.rad2deg(theta_b))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], point1, vector_x, np.rad2deg(theta_a)-90)
+            primerC[k] = 1
+
+        translate_object(pyvista_poly_dict[f'F{k}M{2}'], ((Offset_R+A_x),0,0))        # Lines up to motor center
+        rotate_around_line(pyvista_poly_dict[f'F{k}M{2}'], (0,0,0), vector_z, Offset_theta_master[k]) # Sets the position correctly
+
+        ############ Rotates Motor C Segment ############
+        # Casts it back to center for easier rotational math
+        rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], (0,0,0), vector_z, -Offset_theta_master[k]) 
+        translate_object(pyvista_poly_dict[f'F{k}M{3}'], (-(Offset_R+A_x),0,0))
+
+        if primerT[k] != 0:
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point1, vector_x, -(np.rad2deg(theta_a)-90))
+            translate_object(pyvista_poly_dict[f'F{k}M{3}'], (-dtx[k],0,dtz[k]))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point3, vector_y, -np.rad2deg(delta_theta[2,k]))
+            
+            tx, tz  = rotate_point((0,A+B), (0,A+B+C), 90-np.rad2deg(theta_b))
+            dtx[k] = 0 - tx 
+            dtz[k] = (A+B+C) - tz
+            
+            translate_object(pyvista_poly_dict[f'F{k}M{3}'], (dtx[k],0,-dtz[k]))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point1, vector_x, np.rad2deg(delta_theta[0,k]))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point1, vector_x, np.rad2deg(theta_a)-90)
+            
+        if primerT[k] == 0:
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point2, vector_y, 90-np.rad2deg(theta_b))
+            tx, tz  = rotate_point((0,A+B), (0,A+B+C), 90-np.rad2deg(theta_b))
+            
+            dtx[k] = 0 - tx 
+            dtz[k] = (A+B+C) - tz                 
+            translate_object(pyvista_poly_dict[f'F{k}M{3}'], (-dtx[k],0,dtz[k]))
+            
+            thet_d = np.rad2deg(theta_b) - np.rad2deg(theta_c)
+            theta_c2 = np.rad2deg(theta_c) - thet_d
+            theta_c3 = 90 - theta_c2
+            
+            offset = np.rad2deg(theta_c) - np.rad2deg(theta_b)+theta_c3
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point3, vector_y, (theta_c3-offset))
+            translate_object(pyvista_poly_dict[f'F{k}M{3}'], (dtx[k],0,-dtz[k]))
+            rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], point1, vector_x, np.rad2deg(theta_a)-90)
+            primerT[k] = 1
+            
+        translate_object(pyvista_poly_dict[f'F{k}M{3}'], ((Offset_R+A_x),0,0))        # Lines up to motor center
+        rotate_around_line(pyvista_poly_dict[f'F{k}M{3}'], (0,0,0), vector_z, Offset_theta_master[k]) # Sets the position correctly
+
+        delta_theta[:,k] = np.array([theta_a, theta_b, theta_c])
+    
             
     val_fix += 1
     
@@ -410,12 +504,9 @@ def animate():
             
            ############ Ball and Stick Actors ############
             for j in range(6):        
-                pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])
-            
+                pyvista_poly_dict_BAS[f'F{k}J{j}'].points = np.array([coords[0, j], coords[1, j], coords[2, j]])            
             pyvista_poly_dict_BAS[f'F{k}'].points = np.column_stack((coords[0, :], coords[1, :], coords[2, :]))
                 
-            master_path_plot = rotate_vector(master_path[k], Offset_theta)
-            pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
              
             ############ Rotates Motor Ax Segment ############
             # Casts it back to center for easier rotational math

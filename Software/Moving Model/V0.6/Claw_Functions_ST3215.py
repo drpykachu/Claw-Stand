@@ -311,6 +311,12 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
         master_path[k][0][min(bot_index_finder[k],top_index_finder[k]):max(bot_index_finder[k],top_index_finder[k])] = new_path_x
         master_path[k][1][min(bot_index_finder[k],top_index_finder[k]):max(bot_index_finder[k],top_index_finder[k])] = new_path_y
             
+    #### 7. Let's set the first data point equal to the second data point so its a next step, not a repeated step 
+    for k in range(0,num_fingers):
+        master_path[k][0][0] = master_path[k][0][1]
+        master_path[k][1][0] = master_path[k][1][1]
+        master_path[k][2][0] = master_path[k][2][1]
+        
     return master_path
         
 def rotate_point(origin, point, degree):
