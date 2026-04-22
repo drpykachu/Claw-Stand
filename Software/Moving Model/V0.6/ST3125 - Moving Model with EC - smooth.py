@@ -230,7 +230,7 @@ fixing_finder  = False
 
 # Plotting Correction Circle
 error_distance = 15
-error_angle = 50
+error_angle = 360 - 360/5
 
 correction_circle = circle(error_distance, H_tar, np.linspace(0,359,100))
 correction_circle_points = np.column_stack((correction_circle[0], correction_circle[1], correction_circle[2]*np.ones(len(correction_circle[1]))))
@@ -253,7 +253,7 @@ def fixing_animate():
         correction_distance = error_distance 
         correction_angle = 180  +  error_angle
         if correction_angle > 360:
-            correction_angle = 360 - correction_angle
+            correction_angle = correction_angle - 360 
         
         last_point = np.zeros((num_fingers, 3))
         for k in range(num_fingers):
@@ -282,15 +282,17 @@ def fixing_animate():
 
 
         #### Pathing 2 determination
-        fixing_path_2 = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master)
+        fixing_path_2 = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master, val_anim)
+
         
+
         # Combines translational and rottation fixing
         master_fix = np.concatenate((fixing_path_1, fixing_path_2), axis=2)        
         
         #### Plots new paths and circle
         if fixing_finder == True:
             # Removes old paths and circle
-            plotter.remove_actor('target circle')
+#             plotter.remove_actor('target circle')
             for k in range(num_fingers):
                 plotter.remove_actor(f'paths {k}')
                 
@@ -298,7 +300,7 @@ def fixing_animate():
             # Plots new circle 
             circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
             circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
-            plotter.add_lines(circ_fix_points, width=3, color='red', name='correction circle')
+            plotter.add_lines(circ_fix_points, width=3, color='blue', name='correction circle')
             
             # Plots new Paths
             for k in range(num_fingers):
@@ -317,7 +319,7 @@ def fixing_animate():
             plotter.remove_actor(f'fixer paths {k}')
         
         # Adds the old circle back in
-        plotter.add_lines(circ_tar_points, width=3, color='black', name = 'target circle')
+#         plotter.add_lines(circ_tar_points, width=3, color='black', name = 'target circle')
        
         # Adds the old paths back in
         for p in range(num_fingers):
@@ -432,7 +434,7 @@ def fixing_animate():
     
 
 
-val_anim = points - 5
+val_anim = 0
 val_fix = 0
 def animate():
     global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
@@ -445,7 +447,7 @@ def animate():
     if fixing == False:
 
         # Temporary = for fixing simulation
-        if val_anim == points:
+        if val_anim == 0:
             fixing = True
             fixing_finder = True
 

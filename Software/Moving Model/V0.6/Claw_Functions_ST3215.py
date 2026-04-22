@@ -228,7 +228,7 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     
     return total_path
 
-def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master):
+def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim):
     """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
     
     #### 1. Generates first sequence - normal top path and bottom path.
