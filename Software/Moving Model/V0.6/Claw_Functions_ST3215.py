@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import QTimer
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-import pyautogui  # to automatically detect screen size
+import pyautogui 
 
 # ================= Functions ===================
 
@@ -228,7 +228,7 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     
     return total_path
 
-def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim):
+def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim, actual_path):
     """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
     
     #### 1. Generates first sequence - normal top path and bottom path.
@@ -316,7 +316,20 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
         master_path[k][0][0] = master_path[k][0][1]
         master_path[k][1][0] = master_path[k][1][1]
         master_path[k][2][0] = master_path[k][2][1]
-        
+
+
+    #### 8. Let's do the correction so that it can start from any index (based on val_anim)
+    # Let's shift the datset by val_anim index to pick up where it left off
+    for k in range(num_fingers):
+        master_path[k] = np.roll(master_path[k], shift = -val_anim, axis=1)
+
+    # Now the final movement has to match up to the actual path, not the beginning of the old path
+    if val_anim != 0:
+        for k in range(num_fingers):
+            master_path[k][0][-val_anim:] = actual_path[k][0][:val_anim]
+            master_path[k][1][-val_anim:] = actual_path[k][1][:val_anim]
+            master_path[k][2][-val_anim:] = actual_path[k][2][:val_anim]
+    
     return master_path
         
 def rotate_point(origin, point, degree):

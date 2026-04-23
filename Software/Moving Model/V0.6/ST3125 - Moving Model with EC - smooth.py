@@ -250,6 +250,7 @@ def fixing_animate():
     
     ### Finds last known point - but will be set to when points = 0 for ease
     if fixing_finder == True:
+        val_anim = val_anim - 1
         correction_distance = error_distance 
         correction_angle = 180  +  error_angle
         if correction_angle > 360:
@@ -282,7 +283,7 @@ def fixing_animate():
 
 
         #### Pathing 2 determination
-        fixing_path_2 = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master, val_anim)
+        fixing_path_2 = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master, val_anim,master_path)
 
         
 
@@ -447,7 +448,7 @@ def animate():
     if fixing == False:
 
         # Temporary = for fixing simulation
-        if val_anim == 0:
+        if val_anim == 25:
             fixing = True
             fixing_finder = True
 
