@@ -230,7 +230,7 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
 
 def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim, actual_path):
     """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
-    
+    print(points)
     #### 1. Generates first sequence - normal top path and bottom path.
     exponent = 4
     num_fingers_p1 = num_fingers + 1
@@ -268,7 +268,7 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
             if master_path[k][2][q] == H_tar:
                 flag = True
             if flag == True and master_path[k][2][q] < H_tar:
-                bot_index_finder.append(q)
+                bot_index_finder.append(q) # smoother transition
                 break
     
     #### 4. Now, lets find the index of where each finger finds its way back from bottom to top            

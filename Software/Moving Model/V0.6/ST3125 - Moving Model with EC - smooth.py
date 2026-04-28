@@ -216,8 +216,6 @@ camera_distance(plotter, distance = 1000)
 
 
 # ============================================================ Execution ============================================================
-
-    
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
 theta_a = 361.0
 theta_b = 361.0
@@ -231,6 +229,7 @@ fixing_finder  = False
 # Plotting Correction Circle
 error_distance = 15
 error_angle = 360 - 360/5
+error_angle = 220
 
 correction_circle = circle(error_distance, H_tar, np.linspace(0,359,100))
 correction_circle_points = np.column_stack((correction_circle[0], correction_circle[1], correction_circle[2]*np.ones(len(correction_circle[1]))))
@@ -292,8 +291,6 @@ def fixing_animate():
         
         #### Plots new paths and circle
         if fixing_finder == True:
-            # Removes old paths and circle
-#             plotter.remove_actor('target circle')
             for k in range(num_fingers):
                 plotter.remove_actor(f'paths {k}')
                 
@@ -311,6 +308,7 @@ def fixing_animate():
                 pyvista_poly_dict_BAS[f'P{k}'].points = np.column_stack((master_path_plot[0], master_path_plot[1], master_path_plot[2]))
         
         fixing_finder = False
+        val_anim = val_anim + 1  
         
         
     if fixing == False:
@@ -318,10 +316,7 @@ def fixing_animate():
         plotter.remove_actor('correction circle')
         for k in range(num_fingers):
             plotter.remove_actor(f'fixer paths {k}')
-        
-        # Adds the old circle back in
-#         plotter.add_lines(circ_tar_points, width=3, color='black', name = 'target circle')
-       
+           
         # Adds the old paths back in
         for p in range(num_fingers):
             pyvista_poly_dict_BAS[f'P{p}'] = pv.PolyData(np.array([[0.0,0.0,0.0]]*points), lines=np.hstack([[points, *range(points)]]))
@@ -430,12 +425,11 @@ def fixing_animate():
 
         delta_theta[:,k] = np.array([theta_a, theta_b, theta_c])
     
-            
     val_fix += 1
     
 
 
-val_anim = 0
+val_anim = points - 5
 val_fix = 0
 def animate():
     global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
@@ -448,7 +442,7 @@ def animate():
     if fixing == False:
 
         # Temporary = for fixing simulation
-        if val_anim == 25:
+        if val_anim == points:
             fixing = True
             fixing_finder = True
 
