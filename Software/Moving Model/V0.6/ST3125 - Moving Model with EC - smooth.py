@@ -211,10 +211,115 @@ for i in range(points):
 
 camera_distance(plotter, distance = 1000)
 
+#########################################################################################################################################################
+def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim, actual_path):
+    """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
+    
+    #### 1. Generates first sequence - normal top path and bottom path.
+    exponent = 4
+    num_fingers_p1 = num_fingers + 1
+
+    # distributing points
+    point_upper = int(points/num_fingers*(num_fingers-1))
+    point_lower = int(points/num_fingers)
+
+    # building top path
+    top_path = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper))
+    top_path[2] = np.ones(len(top_path[0]))*top_path[2]
+    
+    # building bottom path
+    bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
+    bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
+    bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
+     
+    total_path = np.concatenate((top_path, bot_path), axis=1)    
+    
+    
+    #### 2. Then, it does the rolling of the path to offset per finger
+    master_path = np.ones((num_fingers,3,points))
+    for i in range(num_fingers):
+        """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+        shifter = int(points / (num_fingers) * i)
+        shifted = np.roll(total_path, shift=shifter, axis=1)
+        master_path[i] = shifted
 
 
+    #### 3. Now, lets find the index of where each finger starts its return.
+    bot_index_finder = []
+    for k in range(0,num_fingers):
+        flag = False
+        for q in range(0,len(master_path[k][2])):
+            if master_path[k][2][q] == H_tar:
+                flag = True
+            if flag == True and master_path[k][2][q] < H_tar:
+                bot_index_finder.append(q) # smoother transition
+                break
+    
+    #### 4. Now, lets find the index of where each finger finds its way back from bottom to top            
+    top_index_finder = []
+    for k in range(0,num_fingers):
+        flag = False
+        for q in range(0,len(master_path[k][2])):
+            if master_path[k][2][q] < H_tar:
+                flag = True
+            if flag == True and master_path[k][2][q] == H_tar:
+                top_index_finder.append(q)
+                break
 
 
+        
+    #### 5. Now, for all points leading up to the bottom index, let's employ the fix for the new top path
+    for k in range(0,num_fingers):
+        for q in range(0,top_index_finder[k]):        
+            Xtar_fix = master_path[k][0][q]
+            Ytar_fix = master_path[k][1][q]
+        
+            Offset_theta = Offset_theta_master[k]
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], Offset_theta )                             
+            Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle))
+            Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta )
+            
+            master_path[k][0][q] = Xtar_fix
+            master_path[k][1][q] = Ytar_fix
+            
+
+        
+    #### 6. Now, lets correct the bottom path between the indexes of bottom_index to top_index
+    for k in range(0,num_fingers):            
+        Xtar_fix_start = master_path[k][0][bot_index_finder[k]]
+        Ytar_fix_start = master_path[k][1][bot_index_finder[k]]
+        
+        Xtar_fix_end = master_path[k][0][top_index_finder[k]]
+        Ytar_fix_end = master_path[k][1][top_index_finder[k]]
+        
+        new_path_x = np.linspace(Xtar_fix_start,Xtar_fix_end, abs(top_index_finder[k] - bot_index_finder[k]))
+        new_path_y = np.linspace(Ytar_fix_start,Ytar_fix_end, abs(top_index_finder[k] - bot_index_finder[k]))
+        master_path[k][0][min(bot_index_finder[k],top_index_finder[k]):max(bot_index_finder[k],top_index_finder[k])] = new_path_x
+        master_path[k][1][min(bot_index_finder[k],top_index_finder[k]):max(bot_index_finder[k],top_index_finder[k])] = new_path_y
+            
+    #### 7. Let's set the first data point equal to the second data point so its a next step, not a repeated step 
+    for k in range(0,num_fingers):
+        master_path[k][0][0] = master_path[k][0][1]
+        master_path[k][1][0] = master_path[k][1][1]
+        master_path[k][2][0] = master_path[k][2][1]
+
+    #### 8. Let's do the correction so that it can start from any index (based on val_anim)
+    # Let's shift the datset by val_anim index to pick up where it left off
+
+
+    # Now the final movement has to match up to the actual path, not the beginning of the old path
+    if val_anim != 0:
+        for k in range(num_fingers):
+            master_path[k][0][-val_anim:] = actual_path[k][0][:val_anim]
+            master_path[k][1][-val_anim:] = actual_path[k][1][:val_anim]
+            master_path[k][2][-val_anim:] = actual_path[k][2][:val_anim]
+
+    for k in range(num_fingers):
+        master_path[k] = np.roll(master_path[k], shift = -val_anim, axis=1)
+    return master_path
+
+#######################################################################################################################################################
 # ============================================================ Execution ============================================================
 theta_reals = np.ones(3)*361.0 # random seed greater than any angle
 theta_a = 361.0
@@ -282,6 +387,9 @@ def fixing_animate():
 
 
         #### Pathing 2 determination
+            
+            
+            
         fixing_path_2 = master_pathing_fix(fixing_path_points_2, delta_Z, num_fingers, R_tar, H_tar,  error_distance, correction_angle, Offset_theta_master, val_anim,master_path)
 
         
@@ -428,8 +536,11 @@ def fixing_animate():
     val_fix += 1
     
 
+temp_setting = points
+temp_setting = 100
 
-val_anim = points - 5
+
+val_anim = temp_setting - 5
 val_fix = 0
 def animate():
     global val_anim, val_fix, theta_a, theta_b, theta_c, fixing, fixing_finder,last_point,correction_angle,Offset_theta
@@ -442,7 +553,7 @@ def animate():
     if fixing == False:
 
         # Temporary = for fixing simulation
-        if val_anim == points:
+        if val_anim == temp_setting:
             fixing = True
             fixing_finder = True
 
