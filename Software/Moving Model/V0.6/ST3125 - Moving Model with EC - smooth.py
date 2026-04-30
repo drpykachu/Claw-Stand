@@ -211,10 +211,15 @@ for i in range(points):
 
 camera_distance(plotter, distance = 1000)
 
+
 #########################################################################################################################################################
+
+temp_setting = points
+temp_setting = 100
+
 def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim, actual_path):
     """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
-    
+    print(points)
     #### 1. Generates first sequence - normal top path and bottom path.
     exponent = 4
     num_fingers_p1 = num_fingers + 1
@@ -265,9 +270,7 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
             if flag == True and master_path[k][2][q] == H_tar:
                 top_index_finder.append(q)
                 break
-
-
-        
+            
     #### 5. Now, for all points leading up to the bottom index, let's employ the fix for the new top path
     for k in range(0,num_fingers):
         for q in range(0,top_index_finder[k]):        
@@ -283,8 +286,7 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
             master_path[k][0][q] = Xtar_fix
             master_path[k][1][q] = Ytar_fix
             
-
-        
+    
     #### 6. Now, lets correct the bottom path between the indexes of bottom_index to top_index
     for k in range(0,num_fingers):            
         Xtar_fix_start = master_path[k][0][bot_index_finder[k]]
@@ -304,9 +306,11 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
         master_path[k][1][0] = master_path[k][1][1]
         master_path[k][2][0] = master_path[k][2][1]
 
+
     #### 8. Let's do the correction so that it can start from any index (based on val_anim)
     # Let's shift the datset by val_anim index to pick up where it left off
-
+    for k in range(num_fingers):
+        master_path[k] = np.roll(master_path[k], shift = -val_anim, axis=1)
 
     # Now the final movement has to match up to the actual path, not the beginning of the old path
     if val_anim != 0:
@@ -314,10 +318,11 @@ def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance,
             master_path[k][0][-val_anim:] = actual_path[k][0][:val_anim]
             master_path[k][1][-val_anim:] = actual_path[k][1][:val_anim]
             master_path[k][2][-val_anim:] = actual_path[k][2][:val_anim]
-
-    for k in range(num_fingers):
-        master_path[k] = np.roll(master_path[k], shift = -val_anim, axis=1)
+    
     return master_path
+
+
+
 
 #######################################################################################################################################################
 # ============================================================ Execution ============================================================
@@ -536,8 +541,6 @@ def fixing_animate():
     val_fix += 1
     
 
-temp_setting = points
-temp_setting = 100
 
 
 val_anim = temp_setting - 5
