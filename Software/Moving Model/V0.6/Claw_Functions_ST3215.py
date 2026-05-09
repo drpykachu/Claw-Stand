@@ -229,6 +229,124 @@ def pathing(points, delta_Z,num_fingers,R_tar, H_tar):
     return total_path
 
 
+def master_pathing_fix(points, delta_Z,num_fingers,R_tar, H_tar, error_distance, correction_angle, Offset_theta_master, val_anim, actual_path):
+    """Builds path to fix the correct position. It contains the combination of two pathing - the correct and fixed path."""
+
+    #### 1. Generates first sequence - normal top path and bottom path.
+    exponent = 4
+    num_fingers_p1 = num_fingers + 1
+
+    # distributing points
+    point_upper = int(points/num_fingers*(num_fingers-1))
+    point_lower = int(points/num_fingers)
+
+    # building top path
+    top_path = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_upper))
+    top_path[2] = np.ones(len(top_path[0]))*top_path[2]
+    
+    # building bottom path
+    bot_path_circ = circle(R_tar, H_tar, np.linspace(-360/num_fingers_p1/2, 360/num_fingers_p1/2, point_lower))     # for linear spacing
+    bot_func = delta_Z*np.flip(bot_path_circ[1])**exponent / np.max(bot_path_circ[1]**exponent)  + (bot_path_circ[2] - delta_Z)
+    bot_path = [np.flip(bot_path_circ[0]),np.flip(bot_path_circ[1]),bot_func]    
+     
+    total_path = np.concatenate((top_path, bot_path), axis=1)    
+    
+    
+    #### 2. Then, it does the rolling of the path to offset per finger
+    master_path_og = np.ones((num_fingers,3,points))
+    for i in range(num_fingers):
+        """ Loop to adjust the finger path for each finger, offset by the points/fingers for even spacing."""
+        shifter = int(points / (num_fingers) * i)
+        shifted = np.roll(total_path, shift=shifter, axis=1)
+        master_path_og[i] = shifted
+        
+
+    #### 3. Now, lets correct for the offset circle    
+    master_path_off = master_path_og.copy()
+    for k in range(0,num_fingers):
+        for q in range(0,len(master_path_og[k][0])):        
+            Xtar_fix = master_path_og[k][0][q]
+            Ytar_fix = master_path_og[k][1][q]
+        
+            Offset_theta = Offset_theta_master[k]
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], Offset_theta )                             
+            Xtar_fix = Xtar_fix + error_distance*np.cos(np.deg2rad(correction_angle))
+            Ytar_fix = Ytar_fix + error_distance*np.sin(np.deg2rad(correction_angle))
+            Xtar_fix, Ytar_fix = rotate_point([0, 0], [Xtar_fix, Ytar_fix], -Offset_theta )
+            
+            master_path_off[k][0][q] = Xtar_fix
+            master_path_off[k][1][q] = Ytar_fix
+    
+    
+    #### 4. Since we're starting with the offset_circle, lets roll it to the index of val_anim
+    master_path_off = np.roll(master_path_off, shift=-val_anim, axis=2)
+    master_path_og = np.roll(master_path_og, shift=-val_anim, axis=2)
+    
+    #### 5. Now let's find the indexs for everytime a finger drops. There will be a special finger here too!
+    drop_finder = []
+    for k in range(0,num_fingers):
+        flag = False
+        for q in range(0,len(master_path_off[k][2])):
+            if master_path_off[k][2][q] == H_tar:
+                flag = True
+            if flag == True and master_path_off[k][2][q] < H_tar:
+                drop_finder.append(q)
+                break
+    
+    #### 5. Now let's find the indexs for everytime a finger picks back up.
+    pickup_finder = []
+    for k in range(0,num_fingers):
+        flag = False
+        for q in range(0,len(master_path_off[k][2])):
+            if master_path_off[k][2][q] < H_tar:
+                flag = True
+            if flag == True and master_path_off[k][2][q] == H_tar:
+                pickup_finder.append(q)
+                break
+
+    #### 6. Once it picks back up, we need it to be in the regular mode, not other offset mode.
+    master_path_total = master_path_off.copy()
+    for k in range(0,num_fingers):
+        for q in range(pickup_finder[k],len(master_path_off[k][2])):
+            master_path_total[k][0][q] = master_path_og[k][0][q]
+            master_path_total[k][1][q] = master_path_og[k][1][q]
+
+    #### 7. The bottom path needs to be reconfigured to make up for the distance in the regular and offset mode
+    for k in range(0,num_fingers):            
+        drop_index = drop_finder[k]
+        pickup_index = pickup_finder[k] 
+    
+        # can't do the finger thats in the bottom, let's do the rest here
+        if pickup_index - drop_index > 0:
+           
+            Xtar_fix_start = master_path_off[k][0][drop_index]
+            Ytar_fix_start = master_path_off[k][1][drop_index]
+            Xtar_fix_end = master_path_og[k][0][pickup_index]
+            Ytar_fix_end = master_path_og[k][1][pickup_index]
+            
+            new_path_x = np.linspace(Xtar_fix_start,Xtar_fix_end, pickup_index - drop_index)
+            new_path_y = np.linspace(Ytar_fix_start,Ytar_fix_end, pickup_index - drop_index)
+            
+            master_path_total[k][0][drop_index:pickup_index] = new_path_x
+            master_path_total[k][1][drop_index:pickup_index] = new_path_y
+        
+        # for the finger that's below, let's build the path where it started to the pickup point
+        else:
+            drop_index = 0
+            
+            Xtar_fix_start = master_path_off[k][0][drop_index]
+            Ytar_fix_start = master_path_off[k][1][drop_index]
+            Xtar_fix_end = master_path_og[k][0][pickup_index]
+            Ytar_fix_end = master_path_og[k][1][pickup_index]
+            
+            new_path_x = np.linspace(Xtar_fix_start,Xtar_fix_end, pickup_index - drop_index)
+            new_path_y = np.linspace(Ytar_fix_start,Ytar_fix_end, pickup_index - drop_index)
+            
+            master_path_total[k][0][drop_index:pickup_index] = new_path_x
+            master_path_total[k][1][drop_index:pickup_index] = new_path_y        
+        
+    # and that's it!
+    return master_path_total
         
 def rotate_point(origin, point, degree):
     ox, oy = origin
