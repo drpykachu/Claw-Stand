@@ -403,13 +403,10 @@ The torque is now brought to one side (positive) and remains there for all angle
 
 The translation from theoretical model, to CAD model, to 3D printing and fine-tuning took a considerable amount of time. The considerations for electronics, wiring, polishing, machining, soldering, and coding are not shown here, simply because it is not worth the time and effort type of out the explanations for each aspect. Rather, I wanted to share the aspects to which I thought were the coolest, and I hope you enjoy them as well.
 
+
+### Electronics Bay z
+
+I added a small LED ring in the middle of the base plate the illuminate the object being held. Additionally, this light is used for
+
+ 
 ### Camera-Plate Feedback Loop
-
-### LED Ring
-
-### Electronics Bay
-
-### Spring Slots
-
-### Gallery
-
