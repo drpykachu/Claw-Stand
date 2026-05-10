@@ -214,8 +214,7 @@ camera_distance(plotter, distance = 1000)
 
 #########################################################################################################################################################
 
-temp_setting = 150
-
+temp_setting = 20
 
 #######################################################################################################################################################
 # ============================================================ Execution ============================================================
@@ -231,18 +230,11 @@ fixing_finder  = False
 
 # Plotting Correction Circle
 error_distance = 15
-error_angle = 360 - 360/5
-error_angle = 100
-
-correction_circle = circle(error_distance, H_tar, np.linspace(0,359,100))
-correction_circle_points = np.column_stack((correction_circle[0], correction_circle[1], correction_circle[2]*np.ones(len(correction_circle[1]))))
-plotter.add_lines(correction_circle_points, width=3, color='red')
-
+error_angle = 220
 
 # Generates path
 fixing_path_points_1 = 20
 fixing_path_points_2 = points
-
 
 
 def fixing_animate():
@@ -302,7 +294,7 @@ def fixing_animate():
             # Plots new circle 
             circle_fix = circle_origin(R_tar, H_tar, np.linspace(0, 359, points),[error_distance*np.cos(np.deg2rad(correction_angle)),error_distance*np.sin(np.deg2rad(correction_angle))])
             circ_fix_points = np.column_stack((circle_fix[0], circle_fix[1], circle_fix[2]*np.ones(len(circle_fix[1]))))
-            plotter.add_lines(circ_fix_points, width=3, color='blue', name='correction circle')
+            plotter.add_lines(circ_fix_points, width=3, color='gray', name='correction circle')
             
             # Plots new Paths
             for k in range(num_fingers):

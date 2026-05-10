@@ -410,12 +410,12 @@ The fingers that comprise the claw in the presented animations are connectec to 
 
 
 <div align="center">
-  <img src="assets/Ebay-TopDown.PNG" alt="Ebay-TopDown"  style="max-width: 75%; height: auto;/>
+  <img src="assets/Ebay-TopDown.PNG" alt="Ebay-TopDown"  style="max-width: 50%; height: auto;/>
 </div>
  
 <br>
 <div align="center">
-  <img src="assets/Ebay-Expanded.PNG" alt="Ebay-Expanded" style="max-width: 75%; height: auto;/>
+  <img src="assets/Ebay-Expanded.PNG" alt="Ebay-Expanded" style="max-width: 50%; height: auto;/>
 </div> 
 
 <br>
@@ -424,8 +424,31 @@ The fingers that comprise the claw in the presented animations are connectec to 
 
 The claw, finally completed and ready to run, was initially only able to hold spherical objects as they are symmetrical in any orientation. Any spherical object would auto-correct if there was any mis-calibration in fingertip position. Holding other types of objects, such as flat objects (plate), would be a challenge as any fingertip position mis-calibration would lead to drift. Enough drift, and the plate falls off the plate. With the addition of a small raspberry pi camera, along with the processing power of the Raspberry Pi and the ulimtation aspect of the LED ring, image processing feedback loop was developed to track the location of plate. If the plate drifted too far to one side, the raspberry pi goes into "fixing mode" to bring the plate back to near center. *Development of this image correction hardware and software took by far the longest amound of time to make*
 
-The animation of a correction detection and correction is seen here:
+The animation of a drift detection and correction is seen here:
 
+<div style="display: flex; justify-content: center;">
+  <img src="assets/Correction.gif" alt="Correction" style="max-width: 75%; height: auto;" />
+</div>
 
+<br>
+Where the dashed black line is the normal path to follow, and the gray curve is the correction path. When a drift threshold is met (15 mm from center), the all fingers move in sync to move the plate back to the center. After the translational movement, the fingers need to reset their position from the correction path to the normal path. I first attempted to hold each finger still and move one at a time, but there were instances of imbalance between fingers due to the position on the path, and the the plate would fall off. The resetting of the fingers in this animation differs from the former by having the finger position reset during the downsweep. This is observed by a finger leaving on the dashed gray circle during the start of the downsweep, and touching the dashed black circle on the end of the downsweep.
 
-### Gallery
+## Gallery
+
+### Electronics Bay
+
+<div align="center">
+  <img src="assets/Ebay - real.jpeg" alt="Ebay-real" style="max-width: 50%; height: auto;/>
+</div> 
+
+<br>
+
+### Claw - Stagnant
+
+<div align="center">
+  <img src="assets/Claw - real.jpeg" alt="Claw-real" style="max-width: 50%; height: auto;/>
+</div> 
+
+<br>
+
+### Claw - Moving
