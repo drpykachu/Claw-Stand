@@ -1,4 +1,4 @@
-# 🦾 Claw Stand (Work in Progress)
+#  Claw Stand
 
 ## Hello all! 
 
@@ -401,12 +401,31 @@ The torque is now brought to one side (positive) and remains there for all angle
 
 ## Part 3: Final Build And Considerations
 
-The translation from theoretical model, to CAD model, to 3D printing and fine-tuning took a considerable amount of time. The considerations for electronics, wiring, polishing, machining, soldering, and coding are not shown here, simply because it is not worth the time and effort type of out the explanations for each aspect. Rather, I wanted to share the aspects to which I thought were the coolest, and I hope you enjoy them as well.
+The translation from theoretical model, to CAD model, to 3D printing and fine-tuning took a considerable amount of time and effort. The considerations for electronics, wiring, polishing, machining, soldering, and coding are not shown here, simply because it is not worth the time and effort type of out the explanations for each aspect. Rather, I wanted to share the aspects to which I thought were the neat.
 
 
-### Electronics Bay z
+### Electronics Bay
 
-I added a small LED ring in the middle of the base plate the illuminate the object being held. Additionally, this light is used for
+The fingers that comprise the claw in the presented animations are connectec to a base plate. I chose to make an electronics bay that houses the computer, power supplies, and other ancillary electronics equipment to make the claw a stand-alone piece. The processor chosen to run the claw computations and motor control commands is a Easpberry Pi 5. The motor driver is a 12v serial bus driver. The Pi requires a 5V power supply, and the motor driver require a 12V supply, which are included in the bay as well. Lastly, I included a ring of LED that is oriented upwards to illuminate the object being held. 
 
+
+<div align="center">
+  <img src="assets/Ebay-TopDown.PNG" alt="Ebay-TopDown"  style="max-width: 75%; height: auto;/>
+</div>
  
+<br>
+<div align="center">
+  <img src="assets/Ebay-Expanded.PNG" alt="Ebay-Expanded" style="max-width: 75%; height: auto;/>
+</div> 
+
+<br>
+
 ### Camera-Plate Feedback Loop
+
+The claw, finally completed and ready to run, was initially only able to hold spherical objects as they are symmetrical in any orientation. Any spherical object would auto-correct if there was any mis-calibration in fingertip position. Holding other types of objects, such as flat objects (plate), would be a challenge as any fingertip position mis-calibration would lead to drift. Enough drift, and the plate falls off the plate. With the addition of a small raspberry pi camera, along with the processing power of the Raspberry Pi and the ulimtation aspect of the LED ring, image processing feedback loop was developed to track the location of plate. If the plate drifted too far to one side, the raspberry pi goes into "fixing mode" to bring the plate back to near center. *Development of this image correction hardware and software took by far the longest amound of time to make*
+
+The animation of a correction detection and correction is seen here:
+
+
+
+### Gallery
