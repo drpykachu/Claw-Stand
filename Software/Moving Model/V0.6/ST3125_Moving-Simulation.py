@@ -47,6 +47,7 @@ delta_Z     = 20   # Dropping from path for reset
 points      = 200  # Number of points for path
 
 speed       = 100   # Animation speed
+drift_correction = True # Error Fixing Code
 
 # ================= Pathing ===================
 Offset_theta_master = np.linspace(360,0,num_fingers+1)[0:num_fingers] # Flip the 0 and 360 to change direction
@@ -439,7 +440,7 @@ def animate():
     if fixing == False:
 
         # Temporary = for fixing simulation
-        if val_anim == temp_setting:
+        if val_anim == temp_setting and drift_correction == True:
             fixing = True
             fixing_finder = True
 
