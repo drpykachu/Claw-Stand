@@ -416,12 +416,12 @@ The fingers that comprise the claw in the presented animations are connectec to 
 
 
 <div align="center">
-  <img src="assets/Ebay-TopDown.PNG" alt="Ebay-TopDown"  style="max-width: 50%; height: auto;/>
+  <img src="assets/Ebay-TopDown.PNG" alt="Ebay-TopDown"  style="max-width: 50%; height: auto;" />
 </div>
  
 <br>
 <div align="center">
-  <img src="assets/Ebay-Expanded.PNG" alt="Ebay-Expanded" style="max-width: 50%; height: auto;/>
+  <img src="assets/Ebay-Expanded.PNG" alt="Ebay-Expanded" style="max-width: 50%; height: auto;" />
 </div> 
 
 <br>
