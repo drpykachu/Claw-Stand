@@ -444,22 +444,17 @@ Where the dashed black line is the normal path to follow, and the gray curve is 
 ### Electronics Bay
 
 <div align="center">
-  <img src="assets/Ebay - real.jpeg" alt="Ebay-real" style="max-width: 50%; height: auto;/>
+  <img src="assets/Ebay - real.jpeg" alt="Ebay-real" style="max-width: 50%; height: auto;" />
 </div> 
 
 <br>
 
-Here we can see the electronic components and the wiring.
 
 ### Claw - Stagnant
 
 <div align="center">
-  <img src="assets/Claw - real.jpeg" alt="Claw-real" style="max-width: 50%; height: auto;/>
+  <img src="assets/Claw - real.jpeg" alt="Claw-real" style="max-width: 50%; height: auto;" />
 </div> 
-
-<br>
-
-Here we can see the claw without moving.
 
 <br>
 
