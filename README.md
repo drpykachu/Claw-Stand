@@ -1,3 +1,9 @@
+
+
+
+
+
+
 #  Claw Stand
 
 ## Hello all! 
@@ -453,3 +459,6 @@ Where the dashed black line is the normal path to follow, and the gray curve is 
 
 ### Claw - Moving
 
+<br>
+
+https://github.com/user-attachments/assets/a1c54686-66d3-4b85-84ab-2f56ab6c1aae
